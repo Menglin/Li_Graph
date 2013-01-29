@@ -1,0 +1,44 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Express 2012 for Windows Desktop
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Li_Graph", "Li_Graph\Li_Graph.vcxproj", "{CD3293C7-F294-4325-9BC2-E0EA2DBFEE04}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Li_Graphic_FrameWork", "Li_Graphic_FrameWork\Li_Graphic_FrameWork.vcxproj", "{384849EA-F75E-48A3-B90B-4E6DC137E4D9}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Li_Graph_Generator", "Li_Graph_Generator\Li_Graph_Generator.vcxproj", "{3F70D3F6-7524-438E-A0A3-5814045F9852}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Li_Graph_Browser", "Li_Graph_Browser\Li_Graph_Browser.vcxproj", "{B4F1C331-D056-48E0-B67B-40773EBD2504}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Li_EvoGame_onGraph", "Li_EvoGame_onGraph\Li_EvoGame_onGraph.vcxproj", "{6BB9FABB-DB52-45F0-9C9F-7C1BB07DE19B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CD3293C7-F294-4325-9BC2-E0EA2DBFEE04}.Debug|Win32.ActiveCfg = Debug|Win32
+		{CD3293C7-F294-4325-9BC2-E0EA2DBFEE04}.Debug|Win32.Build.0 = Debug|Win32
+		{CD3293C7-F294-4325-9BC2-E0EA2DBFEE04}.Release|Win32.ActiveCfg = Release|Win32
+		{CD3293C7-F294-4325-9BC2-E0EA2DBFEE04}.Release|Win32.Build.0 = Release|Win32
+		{384849EA-F75E-48A3-B90B-4E6DC137E4D9}.Debug|Win32.ActiveCfg = Debug|Win32
+		{384849EA-F75E-48A3-B90B-4E6DC137E4D9}.Debug|Win32.Build.0 = Debug|Win32
+		{384849EA-F75E-48A3-B90B-4E6DC137E4D9}.Release|Win32.ActiveCfg = Release|Win32
+		{384849EA-F75E-48A3-B90B-4E6DC137E4D9}.Release|Win32.Build.0 = Release|Win32
+		{3F70D3F6-7524-438E-A0A3-5814045F9852}.Debug|Win32.ActiveCfg = Debug|Win32
+		{3F70D3F6-7524-438E-A0A3-5814045F9852}.Debug|Win32.Build.0 = Debug|Win32
+		{3F70D3F6-7524-438E-A0A3-5814045F9852}.Release|Win32.ActiveCfg = Release|Win32
+		{3F70D3F6-7524-438E-A0A3-5814045F9852}.Release|Win32.Build.0 = Release|Win32
+		{B4F1C331-D056-48E0-B67B-40773EBD2504}.Debug|Win32.ActiveCfg = Debug|Win32
+		{B4F1C331-D056-48E0-B67B-40773EBD2504}.Debug|Win32.Build.0 = Debug|Win32
+		{B4F1C331-D056-48E0-B67B-40773EBD2504}.Release|Win32.ActiveCfg = Release|Win32
+		{B4F1C331-D056-48E0-B67B-40773EBD2504}.Release|Win32.Build.0 = Release|Win32
+		{6BB9FABB-DB52-45F0-9C9F-7C1BB07DE19B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{6BB9FABB-DB52-45F0-9C9F-7C1BB07DE19B}.Debug|Win32.Build.0 = Debug|Win32
+		{6BB9FABB-DB52-45F0-9C9F-7C1BB07DE19B}.Release|Win32.ActiveCfg = Release|Win32
+		{6BB9FABB-DB52-45F0-9C9F-7C1BB07DE19B}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
