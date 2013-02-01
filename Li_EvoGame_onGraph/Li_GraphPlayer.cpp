@@ -82,6 +82,9 @@ void Li_GraphPlayer::fn_DrawGraph()
 	}
 	// end for i
 
+	// draw UI
+	fn_drawUI();
+
 	// draw Tip
 	if (drawTip != -1)
 	{
@@ -112,7 +115,10 @@ void Li_GraphPlayer::fn_DrawGraph()
 		m_font->DrawText(m_dxSpriteInterface,  tmpStr, -1, NULL, DT_LEFT, D3DCOLOR(0xFF000000));
 	}
 	// end if
+}
 
+void Li_GraphPlayer::fn_drawUI()
+{
 	// draw graph attributes
 	// Plot Node Info
 	RECT rct;
@@ -152,6 +158,11 @@ void Li_GraphPlayer::fn_DrawGraph()
 	strcpy_s(tmpStr, "Press 'ESC' to quit, press 'R' to reset position\n");
 	strcat_s(tmpStr, "Left Btn: move the Node. Right Btn: move the scene. Mouse wheel: Scale.");
 	m_font->DrawText(m_dxSpriteInterface,  tmpStr, -1, NULL, DT_CENTER, D3DCOLOR(0xFFFF0F0F));
+
+	// draw button
+	m_btnRun.fn_drawButton(m_dxSpriteInterface);
+	m_btnPause.fn_drawButton(m_dxSpriteInterface);
+	m_btnStop.fn_drawButton(m_dxSpriteInterface);
 }
 
 
@@ -165,8 +176,17 @@ HRESULT Li_GraphPlayer::fn_ctrl_initD3D()
 	HRESULT r = Li_GraphBrowser::fn_ctrl_initD3D();
 
 	//// initial new d3d obj here ////
-
-	//// initial new d3d obj here ////
+	m_btnRun.fn_setTexture(m_d3dDev, "../res/btnRun.png");
+	m_btnRun.fn_setbtnState(IDLE);
+	m_btnRun.fn_setPosition(m_WinWidth / 2.0f - 64.0f, m_WinHeight-48.0f);
+	
+	m_btnPause.fn_setTexture(m_d3dDev, "../res/btnPause.png");
+	m_btnPause.fn_setbtnState(IDLE);
+	m_btnPause.fn_setPosition(m_WinWidth / 2.0f - 16.0f, m_WinHeight-48.0f);
+	
+	m_btnStop.fn_setTexture(m_d3dDev, "../res/btnStop.png");
+	m_btnStop.fn_setbtnState(IDLE);
+	m_btnStop.fn_setPosition(m_WinWidth / 2.0f + 32.0f, m_WinHeight-48.0f);
 
 	return r;
 }
@@ -175,17 +195,26 @@ HRESULT Li_GraphPlayer::fn_ctrl_releaseD3D()
 {
 	//// release new d3d obj here ////
 
-	//// release new d3d obj here ////
-
 	return Li_GraphBrowser::fn_ctrl_releaseD3D();
 }
 
-void Li_GraphPlayer::fn_ctrl_mainLogic()
+void Li_GraphPlayer::fn_ctrl_mainLogic() // in fn_MsgLoop()
 {
 	Li_GraphBrowser::fn_ctrl_mainLogic();
 
+	if (m_state == PAUSE)
+	{
+	}
+	else if (m_state == INIT)
+	{
+		fn_initStrategy();
+		m_state = PAUSE;
+	}
 
-	fn_goEpic();
+	if (m_state == RUNNING)
+	{
+		fn_goEpic();
+	}
 }
 
 void Li_GraphPlayer::fn_ctrl_d3dRender()
@@ -201,15 +230,8 @@ void Li_GraphPlayer::fn_goEpic()
 		fn_updateGen();
 		fn_calPayoff();
 		fn_calCR();
-		fn_UpdateFrame();
+		fn_UpdateFrame(); // this will force the program to call fn_ctrl_d3dRender()
 		m_LastUpdateTime = curtime;
-	}
-
-	//// Keyboard inputs ////
-	// input R to reinit the graph
-	if(m_DxInput->m_KeyState[DIK_R] & 0x80)
-	{
-		fn_initStrategy();
 	}
 }
 
@@ -288,12 +310,153 @@ void Li_GraphPlayer::fn_updateGen()
 void Li_GraphPlayer::fn_initStrategy()
 {
 	int tnum = m_Nodes.size();
+
+	// Random initialize ////
+	/*
 	for (int i = 0; i < tnum; i++)
 	{
 		m_Nodes[i]->m_Agent->m_Strategy = STRATEGY(rand()%2);
 	}
+	*/
+
+	// to all C
+	for (int i = 0; i < tnum; i++)
+	{
+		m_Nodes[i]->m_Agent->m_Strategy = PUREC;
+	}
 
 	m_LastUpdateTime = time (NULL);
 	m_GenNum = 0;
+	fn_calPayoff();
 	fn_calCR();
+}
+
+void Li_GraphPlayer::fn_keyListener()
+{
+	Li_GraphBrowser::fn_keyListener();
+	//// Keyboard inputs ////
+	// input R to reset the graph
+	if(m_DxInput->m_KeyState[DIK_R] & 0x80)
+	{
+		m_state = INIT;
+	}
+	// input S to run the graph
+	else if(m_DxInput->m_KeyState[DIK_S] & 0x80)
+	{
+		m_state = RUNNING;
+	}
+	// input P to pause the graph
+	else if(m_DxInput->m_KeyState[DIK_P] & 0x80)
+	{
+		m_state = PAUSE;
+	}
+}
+
+void Li_GraphPlayer::fn_mouseListener()
+{
+	Li_GraphBrowser::fn_mouseListener();
+	//// Mouse Left Button ////
+	static bool alreadySelectedANode = false;
+
+	// Button events
+	if (s_MousePosAbs.x > m_btnRun.fn_getx() && s_MousePosAbs.x < m_btnRun.fn_getx() + m_btnRun.fn_getWidth() &&
+		s_MousePosAbs.y > m_btnRun.fn_gety() && s_MousePosAbs.y < m_btnRun.fn_gety() + m_btnRun.fn_getHeight())
+	{
+		if (s_isLBtnDown)
+		{
+			m_btnRun.fn_setbtnState(PUSH);
+			m_state = RUNNING;
+		}
+		else
+			m_btnRun.fn_setbtnState(PASS);
+	}
+	else
+	{
+		m_btnRun.fn_setbtnState(IDLE);
+	}
+
+	if (s_MousePosAbs.x > m_btnPause.fn_getx() && s_MousePosAbs.x < m_btnPause.fn_getx() + m_btnPause.fn_getWidth() &&
+		s_MousePosAbs.y > m_btnPause.fn_gety() && s_MousePosAbs.y < m_btnPause.fn_gety() + m_btnPause.fn_getHeight())
+	{
+		if (s_isLBtnDown)
+		{
+			m_btnPause.fn_setbtnState(PUSH);
+			m_state = PAUSE;
+		}
+		else
+			m_btnPause.fn_setbtnState(PASS);
+	}
+	else
+	{
+		m_btnPause.fn_setbtnState(IDLE);
+	}
+
+	if (s_MousePosAbs.x > m_btnStop.fn_getx() && s_MousePosAbs.x < m_btnStop.fn_getx() + m_btnStop.fn_getWidth() &&
+		s_MousePosAbs.y > m_btnStop.fn_gety() && s_MousePosAbs.y < m_btnStop.fn_gety() + m_btnStop.fn_getHeight())
+	{
+		if (s_isLBtnDown)
+		{
+			m_btnStop.fn_setbtnState(PUSH);
+			m_state = INIT;
+		}
+		else
+			m_btnStop.fn_setbtnState(PASS);
+	}
+	else
+	{
+		m_btnStop.fn_setbtnState(IDLE);
+	}
+
+	// mouse right button down
+	if (s_isRBtnDown)
+	{
+		if (!alreadySelectedANode)
+		{
+			float nodeR = m_nodeSprite.fn_getWidth() / 2.0f;
+
+			// loop from the back to front, make sure always select the one on top
+			for (int i = (int)m_Nodes.size() - 1; i >= 0; i--)
+			{
+				D3DXVECTOR2 tmpVec = D3DXVECTOR2(0,0);
+				// clip nodes
+				tmpVec = m_CamMan->fn_getRelPos(D3DXVECTOR2(m_Nodes[i]->m_PosX, m_Nodes[i]->m_PosY));
+
+				if (((s_MousePosAbs.x - tmpVec.x)*(s_MousePosAbs.x - tmpVec.x) +
+					(s_MousePosAbs.y - tmpVec.y)*(s_MousePosAbs.y - tmpVec.y) <= nodeR*nodeR) &&
+					(!alreadySelectedANode))
+				{
+					alreadySelectedANode = true;
+						
+					if (m_Nodes[i]->m_Agent->m_Strategy == PUREC)
+						m_Nodes[i]->m_Agent->m_Strategy = PURED;
+					else if (m_Nodes[i]->m_Agent->m_Strategy == PURED)
+						m_Nodes[i]->m_Agent->m_Strategy = PUREC;
+
+					fn_calPayoff();
+					fn_calCR();
+					// only one can been selected at a time, deal with overlap nodes
+					break;
+				}
+			}
+			// end for
+		}
+		// end if
+
+		// update frame when the mous button down, so we could move the node in the render loop
+		// save from using another loop
+		fn_UpdateFrame(); // this will force the program to call fn_ctrl_d3dRender()
+	}
+	// mouse right up
+	else if (!s_isLBtnDown)
+	{
+		for (unsigned int i = 0; i < m_Nodes.size(); i++)
+		{
+			// release all
+			m_Nodes[i]->m_isSelected = false;
+		}
+		alreadySelectedANode = false;
+		// end for
+	}
+	// end if
+	//// end Mouse right Button ////
 }

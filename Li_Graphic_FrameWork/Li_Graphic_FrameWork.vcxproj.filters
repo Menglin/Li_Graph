@@ -36,6 +36,9 @@
     <ClCompile Include="Li_UTI_WndProc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Li_UTI_UI.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Li_UTI_CameraMan.h">
@@ -57,6 +60,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Li_UTI_Win32.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Li_UTI_UI.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

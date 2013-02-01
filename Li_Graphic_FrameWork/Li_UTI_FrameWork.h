@@ -39,6 +39,8 @@ protected:
 	// control the graphics using overload function
 	virtual void fn_ctrl_mainLogic() = 0;
 	virtual void fn_ctrl_d3dRender() = 0;
+	virtual void fn_keyListener(){};
+	virtual void fn_mouseListener(){};
 
 	// tell the engine to update the frame
 	static inline void fn_UpdateFrame(){s_UpdateGraphic = true;}

@@ -182,6 +182,8 @@ HRESULT Li_FW::fn_MsgLoop()
 
 			// run main logic
 			fn_ctrl_mainLogic();
+			fn_keyListener();
+			fn_mouseListener();
 
 			// reset d3d device after resize window
 			if (s_ResetD3DDevice)

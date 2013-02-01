@@ -31,15 +31,25 @@ public:
 	void fn_resetTexture(IDirect3DDevice9* pDevice, LPCSTR pStrFile);
 
 	// draw the rect part of the sprite texture
-	HRESULT fn_drawSprite(LPD3DXSPRITE dxSpriteInterface, D3DXVECTOR3 translation = D3DXVECTOR3(0,0,0),
+	HRESULT fn_drawSprite(LPD3DXSPRITE dxSpriteInterface);
+	HRESULT fn_drawSprite(LPD3DXSPRITE dxSpriteInterface, D3DXVECTOR3 translation,
 						D3DXCOLOR blendCol = D3DXCOLOR(1, 1, 1, 1), RECT *rect = NULL);
 	// draw a Frame by keep the resolution of margins
 	void fn_drawAsBoarder(LPD3DXSPRITE dxSpriteInterface, RECT frame);
+
+	void fn_setPosition(float x, float y)
+	{
+		m_pos.x = x;
+		m_pos.y = y;
+	}
+	float fn_getx() {return m_pos.x;}
+	float fn_gety() {return m_pos.y;}
 
 	long fn_getHeight();
 	long fn_getWidth();
 
 protected:
+	D3DXVECTOR2 m_pos;					// position of the sprite *this pos is the abs pos on the screen
 	long m_Height;						// height of the texture
 	long m_Width;						// width of the texture
 

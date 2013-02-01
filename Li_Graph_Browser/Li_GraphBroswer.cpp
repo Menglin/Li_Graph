@@ -188,6 +188,32 @@ HRESULT Li_GraphBrowser::fn_ctrl_releaseD3D()
 
 void Li_GraphBrowser::fn_ctrl_mainLogic()
 {
+}
+
+void Li_GraphBrowser::fn_ctrl_d3dRender()
+{
+	fn_DrawGraph();
+}
+
+// Listener
+void Li_GraphBrowser::fn_keyListener()
+{
+	//// Keyboard inputs ////
+	// input R to reinit the graph
+	if(m_DxInput->m_KeyState[DIK_R] & 0x80)
+	{
+		fn_InitNodePos();
+		fn_UpdateFrame();
+	}
+
+	// input ESC to quit
+	if(m_DxInput->m_KeyState[DIK_ESCAPE] & 0x80)
+		PostQuitMessage(0);
+	//// Keyboard inputs ////
+}
+
+void Li_GraphBrowser::fn_mouseListener()
+{
 	//// Mouse Left Button ////
 	static bool alreadySelectedANode = false;
 	// mouse left button down
@@ -221,7 +247,7 @@ void Li_GraphBrowser::fn_ctrl_mainLogic()
 
 		// update frame when the mous button down, so we could move the node in the render loop
 		// save from using another loop
-		fn_UpdateFrame();
+		fn_UpdateFrame(); // this will force the program to call fn_ctrl_d3dRender()
 	}
 	// mouse left up
 	else
@@ -243,22 +269,4 @@ void Li_GraphBrowser::fn_ctrl_mainLogic()
 	{
 	}
 	//// end Mouse Right Button ////
-
-	//// Keyboard inputs ////
-	// input R to reinit the graph
-	if(m_DxInput->m_KeyState[DIK_R] & 0x80)
-	{
-		fn_InitNodePos();
-		fn_UpdateFrame();
-	}
-
-	// input ESC to quit
-	if(m_DxInput->m_KeyState[DIK_ESCAPE] & 0x80)
-		PostQuitMessage(0);
-	//// Keyboard inputs ////
-}
-
-void Li_GraphBrowser::fn_ctrl_d3dRender()
-{
-	fn_DrawGraph();
 }

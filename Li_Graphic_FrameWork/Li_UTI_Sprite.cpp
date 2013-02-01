@@ -39,6 +39,21 @@ HRESULT Li_Sprite_Interface::fn_spriteInterfaceEnd()
 	  /////////////////
 	 // Base Sprite //
 	/////////////////
+HRESULT Li_Sprite::fn_drawSprite(LPD3DXSPRITE dxSpriteInterface)
+{
+	// Build our matrix to rotate, scale and position our sprite
+	D3DXMATRIX mat;
+	D3DXVECTOR3 translation;
+	translation.x = m_pos.x;
+	translation.y = m_pos.y;
+	translation.z = 0;
+
+	// out, scaling centre, scaling rotation, scaling, rotation centre, rotation, translation
+	D3DXMatrixTransformation(&mat, NULL, NULL, NULL, NULL, NULL, &translation);
+
+	dxSpriteInterface->SetTransform(&mat);
+	return dxSpriteInterface->Draw(m_dxTexture,NULL,NULL,NULL,0xFFFFFFFF);
+}
 
 HRESULT Li_Sprite::fn_drawSprite(LPD3DXSPRITE dxSpriteInterface, D3DXVECTOR3 translation, D3DXCOLOR blendCol, RECT *pSrcRect)
 {
@@ -273,12 +288,12 @@ void Li_Sprite::fn_setTexture(IDirect3DDevice9* pDevice, LPCSTR pStrFile)
 							NULL,						// not using 256 colors
 							&m_dxTexture);				// load to texture_1
 
-	// Get the dimensions of our txture
+	// Get the dimensions of our texture
 	D3DSURFACE_DESC	desc;
 	m_dxTexture->GetLevelDesc(0,&desc);
 
-	m_Height	= desc.Width;
-	m_Width		= desc.Height;
+	m_Width		= desc.Width;
+	m_Height	= desc.Height;
 }
 
 void Li_Sprite::fn_releaseTexture()

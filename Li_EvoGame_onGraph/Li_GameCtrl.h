@@ -20,7 +20,7 @@ namespace Li_GameCtrl
 	static void go()
 	{
 		// Enter The Main Event Loop ////
-		mygp->fn_MsgLoop();
+		mygp->fn_MsgLoop(); // call fn_ctrl_mainLogic()
 	}
 
 	static void shutdownGame()
