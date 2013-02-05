@@ -121,16 +121,16 @@ public:
 
 		// Highest Payoff neighbor
 		//STRATEGY tmpS = a.mStrategy;
-		double tmpP = a->m_Agent->m_TotalPayoff;
+		double tmpP = a->m_Agent->m_AveragePayoff;
 		int tmpOrder = -1;
 
 		int tsize = a->m_Conn.size();
 		for (int i = 0; i < tsize; i++)
 		{
-			if (tmpP < a->m_Conn[i]->m_Agent->m_TotalPayoff)
+			if (tmpP < a->m_Conn[i]->m_Agent->m_AveragePayoff)
 			{
 				//tmpS = a.mConn[i]->mStrategy;
-				tmpP = a->m_Conn[i]->m_Agent->m_TotalPayoff;
+				tmpP = a->m_Conn[i]->m_Agent->m_AveragePayoff;
 				tmpOrder = i;
 			}
 			/*

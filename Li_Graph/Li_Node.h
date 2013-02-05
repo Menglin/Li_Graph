@@ -58,6 +58,7 @@ public:
 	STRATEGY	m_Strategy;			// the strategy this Player plays
 	STRATEGY	m_UpdateStrategy;	// a intermedia strategy for the calculating (make sure that all Players can update at the same time in evolution)
 	double		m_TotalPayoff;		// total payoff of this player
+	double		m_AveragePayoff;	// average payoff of this player
 };
 
 class Li_Node

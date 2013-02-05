@@ -63,7 +63,7 @@ public:
 		m_CameraScale /= m_scaleSize;
 	}
 
-protected:
+//protected:
 	// Camera position on the map
 	D3DXVECTOR2 m_CameraPos;	// currently camera position
 

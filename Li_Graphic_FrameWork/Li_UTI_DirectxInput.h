@@ -24,7 +24,7 @@ public:
 	void fn_DetectInput(void);								// gets the current input state
 	void fn_CleanDxInput(void);								// closes DirectInput and releases memory
 
-	BYTE			m_KeyState[256];						// the storage for the key-information, 
+	BYTE m_KeyState[256];									// the storage for the key-information, 
 	/* use as:
 		if(m_KeyState[DIK_ESCAPE] & 0x80)
 			presed

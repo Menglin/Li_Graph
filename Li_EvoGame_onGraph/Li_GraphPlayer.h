@@ -6,6 +6,9 @@
 
 #include "Li_Game.h"
 #include <time.h>
+
+static const DWORD g_UpdateTime = 200; // in millisecond
+
 enum ENUM_STATE
 {
 	INIT,
@@ -19,7 +22,20 @@ public:
 	Li_GraphPlayer()
 	{
 		m_state = PAUSE;
+		m_displayGraph = true;
+		m_logGen = true;
+
+		m_fout.open("log_cr.txt", ios::app);
+
+		if (!m_fout.is_open())
+			m_fout.open("log_cr.txt", ios::out);
 	}
+
+	~Li_GraphPlayer()
+	{
+		m_fout.close();
+	}
+
 	virtual void fn_DrawGraph();
 
 	virtual HRESULT fn_ctrl_initD3D();
@@ -34,13 +50,15 @@ public:
 
 	void fn_initStrategy();
 
-	virtual void fn_keyListener();
-	virtual void fn_mouseListener();
+	virtual bool fn_keyListener();
+	virtual bool fn_mouseListener();
 
 	void fn_drawUI();
 
+	void fn_log();
+
 protected :
-	time_t m_LastUpdateTime;
+	DWORD m_LastUpdateTime;
 	int m_GenNum;
 	double m_CR;
 
@@ -49,6 +67,13 @@ protected :
 	Li_btnSprite m_btnRun;
 	Li_btnSprite m_btnPause;
 	Li_btnSprite m_btnStop;
+	Li_btnSprite m_btnDisplay;
+	Li_btnSprite m_btnLog;
+
+	bool m_displayGraph;
+	bool m_logGen;
+
+	ofstream m_fout;
 };
 
 static Li_GraphPlayer *mygp;

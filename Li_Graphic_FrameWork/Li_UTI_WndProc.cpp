@@ -56,24 +56,28 @@ LRESULT CALLBACK Li_FW::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
 		case WM_LBUTTONDOWN:
 			{
 				s_isLBtnDown = true;
+				s_isLClick	 = true;
 				fn_UpdateFrame();
 			} break;
 
 		case WM_LBUTTONUP:
 			{
 				s_isLBtnDown = false;
+				s_isLRelease = true;
 				fn_UpdateFrame();
 			} break;
 
 		case WM_RBUTTONDOWN:
 			{
 				s_isRBtnDown = true;
+				s_isRClick	 = true;
 				fn_UpdateFrame();
 			} break;
 
 		case WM_RBUTTONUP:
 			{
 				s_isRBtnDown = false;
+				s_isRRelease = true;
 				fn_UpdateFrame();
 			} break;
 
@@ -85,7 +89,13 @@ LRESULT CALLBACK Li_FW::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
 				return 0;
 			} break;
 
-		default: break;
+		default:
+			{
+				s_isLClick	 = false;
+				s_isRClick	 = false;
+				s_isLRelease = false;
+				s_isRRelease = false;
+			} break;
 	}
 
 	// process any messages that we didn't take care of 

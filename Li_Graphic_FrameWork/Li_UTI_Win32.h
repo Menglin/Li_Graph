@@ -41,10 +41,10 @@ public:
 	// Globals ////
 	int		WINDOW_WIDTH;
 	int		WINDOW_HEIGHT;
-	bool		ISWINDOWED;
+	bool	ISWINDOWED;
 	int		iTimeDelta;					// sleep time delta
-	char		szClsName[NAMELEN];		// window class name
-	char		szAppName[NAMELEN];		// the application window name
+	char	szClsName[NAMELEN];			// window class name
+	char	szAppName[NAMELEN];			// the application window name
 
 	HWND hWndMain;						// globally track main window
 

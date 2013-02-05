@@ -9,7 +9,7 @@ HRESULT Li_btnSprite::fn_drawButton(LPD3DXSPRITE dxSpriteInterface)
 	srcRect.left	= 0;
 	srcRect.right	= m_Width;
 
-	switch (m_bntState)
+	switch (m_btnState)
 	{
 	case IDLE:
 		{

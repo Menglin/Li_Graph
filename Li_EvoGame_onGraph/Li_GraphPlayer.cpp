@@ -1,9 +1,17 @@
 #include "Li_GraphPlayer.h"
 #include "../Li_ComnHeader/Li_ComnFunc.h"
+#include "../Li_ComnHeader/Li_MathConst.h"
 
   /*-----------------
  / Graph Functions /
 -----------------*/
+
+static int s_multiSelect = 0;	// 0: no multiSelect; 1: draw bounding; 2: moving multipal object
+
+static float s_clkx;
+static float s_clky;
+static float s_curx;
+static float s_cury;
 
 void Li_GraphPlayer::fn_DrawGraph()
 {
@@ -25,13 +33,24 @@ void Li_GraphPlayer::fn_DrawGraph()
 		// node is grabed
 		if (m_Nodes[i]->m_isSelected)
 		{
-			D3DXVECTOR2 newPos = m_CamMan->fn_getAbsPos(s_MousePosAbs);
+			// if single select, the node simply follow the mouse position
+			if (s_multiSelect == 0)
+			{
+				D3DXVECTOR2 newPos = m_CamMan->fn_getAbsPos(s_MousePosAbs);
 
-			m_Nodes[i]->m_PosX = newPos.x;
-			m_Nodes[i]->m_PosY = newPos.y;
+				m_Nodes[i]->m_PosX = newPos.x;
+				m_Nodes[i]->m_PosY = newPos.y;
 
-			// set draw Tip
-			drawTip = i;
+				// set draw Tip
+				drawTip = i;
+			}
+			// if multi select, draw a circle on it to show those nodes are being selected
+			else
+			{
+				tmpVec2 = m_CamMan->fn_getRelPos(D3DXVECTOR2(m_Nodes[i]->m_PosX, m_Nodes[i]->m_PosY));
+				fn_DrawCircle(tmpVec2.x, tmpVec2.y, nodeR+1, 2.0f, 175, 225,0);
+			}
+			// end if-else
 		}
 		// if mouse on it
 		else if ((s_MousePosAbs.x - tmpVec.x)*(s_MousePosAbs.x - tmpVec.x) +
@@ -82,8 +101,9 @@ void Li_GraphPlayer::fn_DrawGraph()
 	}
 	// end for i
 
-	// draw UI
-	fn_drawUI();
+	// draw bounding square
+	if (s_multiSelect == 1)
+		fn_DrawRectangle(s_clkx, s_clky, s_curx - s_clkx, s_cury - s_clky);
 
 	// draw Tip
 	if (drawTip != -1)
@@ -94,9 +114,9 @@ void Li_GraphPlayer::fn_DrawGraph()
 		// Plot Node Info
 		RECT rct;
 		rct.left	= (long)tmpVec.x + 20;
-		rct.right	= rct.left + 150;
+		rct.right	= rct.left + 175;
 		rct.top		= (long)tmpVec.y + 10;
-		rct.bottom	= rct.top + 125;
+		rct.bottom	= rct.top + 145;
 
 		// draw m_textBoxSprite
 		m_textBoxSprite.fn_drawAsBoarder(m_dxSpriteInterface, rct);
@@ -110,8 +130,10 @@ void Li_GraphPlayer::fn_DrawGraph()
 		strcat_s(tmpStr, ParseStr(m_Nodes[drawTip]->m_LocCC, 4));
 		strcat_s(tmpStr, "\nStrategy : ");
 		strcat_s(tmpStr, ParseStr(m_Nodes[drawTip]->m_Agent->m_Strategy));
-		strcat_s(tmpStr, "\nPayoff : ");
+		strcat_s(tmpStr, "\nTtlPayoff : ");
 		strcat_s(tmpStr, ParseStr(m_Nodes[drawTip]->m_Agent->m_TotalPayoff, 4));
+		strcat_s(tmpStr, "\nAvgPayoff : ");
+		strcat_s(tmpStr, ParseStr(m_Nodes[drawTip]->m_Agent->m_AveragePayoff, 4));
 		m_font->DrawText(m_dxSpriteInterface,  tmpStr, -1, NULL, DT_LEFT, D3DCOLOR(0xFF000000));
 	}
 	// end if
@@ -154,8 +176,8 @@ void Li_GraphPlayer::fn_drawUI()
 
 	// draw m_textBoxSprite
 	m_textBoxSprite.fn_drawAsBoarder(m_dxSpriteInterface, rct);
-
-	strcpy_s(tmpStr, "Press 'ESC' to quit, press 'R' to reset position\n");
+	
+	strcpy_s(tmpStr, "Press 'ESC' to quit, press '1/2/3' to run/pause/stop the evolution\n");
 	strcat_s(tmpStr, "Left Btn: move the Node. Right Btn: move the scene. Mouse wheel: Scale.");
 	m_font->DrawText(m_dxSpriteInterface,  tmpStr, -1, NULL, DT_CENTER, D3DCOLOR(0xFFFF0F0F));
 
@@ -163,6 +185,8 @@ void Li_GraphPlayer::fn_drawUI()
 	m_btnRun.fn_drawButton(m_dxSpriteInterface);
 	m_btnPause.fn_drawButton(m_dxSpriteInterface);
 	m_btnStop.fn_drawButton(m_dxSpriteInterface);
+	m_btnDisplay.fn_drawButton(m_dxSpriteInterface);
+	m_btnLog.fn_drawButton(m_dxSpriteInterface);
 }
 
 
@@ -178,15 +202,23 @@ HRESULT Li_GraphPlayer::fn_ctrl_initD3D()
 	//// initial new d3d obj here ////
 	m_btnRun.fn_setTexture(m_d3dDev, "../res/btnRun.png");
 	m_btnRun.fn_setbtnState(IDLE);
-	m_btnRun.fn_setPosition(m_WinWidth / 2.0f - 64.0f, m_WinHeight-48.0f);
+	m_btnRun.fn_setPosition(m_WinWidth / 2.0f - 112.0f, m_WinHeight-48.0f);
 	
 	m_btnPause.fn_setTexture(m_d3dDev, "../res/btnPause.png");
 	m_btnPause.fn_setbtnState(IDLE);
-	m_btnPause.fn_setPosition(m_WinWidth / 2.0f - 16.0f, m_WinHeight-48.0f);
+	m_btnPause.fn_setPosition(m_WinWidth / 2.0f - 64.0f, m_WinHeight-48.0f);
 	
 	m_btnStop.fn_setTexture(m_d3dDev, "../res/btnStop.png");
 	m_btnStop.fn_setbtnState(IDLE);
-	m_btnStop.fn_setPosition(m_WinWidth / 2.0f + 32.0f, m_WinHeight-48.0f);
+	m_btnStop.fn_setPosition(m_WinWidth / 2.0f - 16.0f, m_WinHeight-48.0f);
+	
+	m_btnDisplay.fn_setTexture(m_d3dDev, "../res/btnDisplay.png");
+	m_btnDisplay.fn_setbtnState(PUSH);
+	m_btnDisplay.fn_setPosition(m_WinWidth / 2.0f + 32.0f, m_WinHeight-48.0f);
+	
+	m_btnLog.fn_setTexture(m_d3dDev, "../res/btnLog.png");
+	m_btnLog.fn_setbtnState(PUSH);
+	m_btnLog.fn_setPosition(m_WinWidth / 2.0f + 80.0f, m_WinHeight-48.0f);
 
 	return r;
 }
@@ -200,7 +232,6 @@ HRESULT Li_GraphPlayer::fn_ctrl_releaseD3D()
 
 void Li_GraphPlayer::fn_ctrl_mainLogic() // in fn_MsgLoop()
 {
-	Li_GraphBrowser::fn_ctrl_mainLogic();
 
 	if (m_state == PAUSE)
 	{
@@ -219,17 +250,25 @@ void Li_GraphPlayer::fn_ctrl_mainLogic() // in fn_MsgLoop()
 
 void Li_GraphPlayer::fn_ctrl_d3dRender()
 {
-	fn_DrawGraph();
+	// draw graph
+	if (m_displayGraph)
+		fn_DrawGraph();
+	// draw UI
+	fn_drawUI();
 }
 
 void Li_GraphPlayer::fn_goEpic()
 {
-	time_t curtime = time(NULL);
-	if (curtime - m_LastUpdateTime > 0.2)
+	DWORD curtime = GetTickCount();
+	if (curtime - m_LastUpdateTime > g_UpdateTime)
 	{
+		if(m_logGen && m_GenNum == 0)
+			fn_log();
 		fn_updateGen();
 		fn_calPayoff();
 		fn_calCR();
+		if (m_logGen)
+			fn_log();
 		fn_UpdateFrame(); // this will force the program to call fn_ctrl_d3dRender()
 		m_LastUpdateTime = curtime;
 	}
@@ -257,10 +296,13 @@ void Li_GraphPlayer::fn_calPayoff()
 		}
 
 		int tsize = m_Nodes[i]->m_Conn.size();
+		// get the total payoff
 		for (int j = 0; j < tsize; j++)
 		{
 			fn_Play(m_Nodes[i], m_Nodes[i]->m_Conn[j], false);
 		}
+		// for the average payoff
+		m_Nodes[i]->m_Agent->m_AveragePayoff = m_Nodes[i]->m_Agent->m_TotalPayoff / tsize;
 	}
 	// end for
 }
@@ -325,138 +367,481 @@ void Li_GraphPlayer::fn_initStrategy()
 		m_Nodes[i]->m_Agent->m_Strategy = PUREC;
 	}
 
-	m_LastUpdateTime = time (NULL);
+	m_LastUpdateTime = GetTickCount ();
 	m_GenNum = 0;
 	fn_calPayoff();
 	fn_calCR();
 }
 
-void Li_GraphPlayer::fn_keyListener()
+bool Li_GraphPlayer::fn_keyListener()
 {
 	Li_GraphBrowser::fn_keyListener();
+
 	//// Keyboard inputs ////
-	// input R to reset the graph
-	if(m_DxInput->m_KeyState[DIK_R] & 0x80)
+	static bool keyPushed = false;
+
+	// input 1 to run the graph
+	if(m_DxInput->m_KeyState[DIK_1] & 0x80)
 	{
-		m_state = INIT;
+		if (!keyPushed)
+		{
+			m_state = RUNNING;
+			keyPushed = true;
+		}
 	}
-	// input S to run the graph
-	else if(m_DxInput->m_KeyState[DIK_S] & 0x80)
+	// input 2 to reset the graph
+	else if(m_DxInput->m_KeyState[DIK_2] & 0x80)
 	{
-		m_state = RUNNING;
+		if (!keyPushed)
+		{
+			m_state = PAUSE;
+			keyPushed = true;
+		}
 	}
-	// input P to pause the graph
-	else if(m_DxInput->m_KeyState[DIK_P] & 0x80)
+	// input 3 to pause the graph
+	else if(m_DxInput->m_KeyState[DIK_3] & 0x80)
 	{
-		m_state = PAUSE;
+		if (!keyPushed)
+		{
+			m_state = INIT;
+			keyPushed = true;
+		}
 	}
+	else if(m_DxInput->m_KeyState[DIK_C] & 0x80)
+	{
+		if (!keyPushed)
+		{
+			// only response the change strategy when we can see the graph
+			// just to prevent strategy change by mistakes
+			if (m_displayGraph)
+			{
+				float nodeR = m_nodeSprite.fn_getWidth() / 2.0f;
+
+				// loop from the back to front, make sure always select the one on top
+				for (int i = (int)m_Nodes.size() - 1; i >= 0; i--)
+				{
+					D3DXVECTOR2 tmpVec = D3DXVECTOR2(0,0);
+					// clip nodes
+					tmpVec = m_CamMan->fn_getRelPos(D3DXVECTOR2(m_Nodes[i]->m_PosX, m_Nodes[i]->m_PosY));
+
+					if (((s_MousePosAbs.x - tmpVec.x)*(s_MousePosAbs.x - tmpVec.x) +
+						(s_MousePosAbs.y - tmpVec.y)*(s_MousePosAbs.y - tmpVec.y) <= nodeR*nodeR))
+					{
+						m_Nodes[i]->m_Agent->m_Strategy = PUREC;
+
+						fn_calPayoff();
+						fn_calCR();
+
+						// only one can been selected at a time, deal with overlap nodes
+						break;
+					}
+				}
+				// end for
+
+				// update frame when the mous button down, so we could move the node in the render loop
+				// save from using another loop
+				fn_UpdateFrame(); // this will force the program to call fn_ctrl_d3dRender()
+			}
+			// end display graph
+			
+			keyPushed = true;
+		}
+		// end if keypushed
+	}
+	// End DIK_C
+	else if(m_DxInput->m_KeyState[DIK_D] & 0x80)
+	{
+		if (!keyPushed)
+		{
+			// only response the change strategy when we can see the graph
+			// just to prevent strategy change by mistakes
+			if (m_displayGraph)
+			{
+				float nodeR = m_nodeSprite.fn_getWidth() / 2.0f;
+
+				// loop from the back to front, make sure always select the one on top
+				for (int i = (int)m_Nodes.size() - 1; i >= 0; i--)
+				{
+					D3DXVECTOR2 tmpVec = D3DXVECTOR2(0,0);
+					// clip nodes
+					tmpVec = m_CamMan->fn_getRelPos(D3DXVECTOR2(m_Nodes[i]->m_PosX, m_Nodes[i]->m_PosY));
+
+					if (((s_MousePosAbs.x - tmpVec.x)*(s_MousePosAbs.x - tmpVec.x) +
+						(s_MousePosAbs.y - tmpVec.y)*(s_MousePosAbs.y - tmpVec.y) <= nodeR*nodeR))
+					{
+						m_Nodes[i]->m_Agent->m_Strategy = PURED;
+
+						fn_calPayoff();
+						fn_calCR();
+
+						// only one can been selected at a time, deal with overlap nodes
+						break;
+					}
+				}
+				// end for
+
+				// update frame when the mous button down, so we could move the node in the render loop
+				// save from using another loop
+				fn_UpdateFrame(); // this will force the program to call fn_ctrl_d3dRender()
+			}
+			// end display graph
+			
+			keyPushed = true;
+		}
+		// end if keypushed
+	}
+	// End DIK_D
+	else if(m_DxInput->m_KeyState[DIK_G] & 0x80)
+	{
+		if (!keyPushed)
+		{
+			// only response the change strategy when we can see the graph
+			// just to prevent strategy change by mistakes
+			if (m_displayGraph)
+			{
+				float nodeR = m_nodeSprite.fn_getWidth() / 2.0f;
+
+				int s = -1;
+				// loop from the back to front, make sure always select the one on top
+				for (int i = (int)m_Nodes.size() - 1; i >= 0; i--)
+				{
+					D3DXVECTOR2 tmpVec = D3DXVECTOR2(0,0);
+					// clip nodes
+					tmpVec = m_CamMan->fn_getRelPos(D3DXVECTOR2(m_Nodes[i]->m_PosX, m_Nodes[i]->m_PosY));
+
+					if (((s_MousePosAbs.x - tmpVec.x)*(s_MousePosAbs.x - tmpVec.x) +
+						(s_MousePosAbs.y - tmpVec.y)*(s_MousePosAbs.y - tmpVec.y) <= nodeR*nodeR))
+					{
+						s = i;
+						// only one can been selected at a time, deal with overlap nodes
+						break;
+					}
+				}
+				// end for
+
+				if (s >= 0)
+				{
+					int radius = 25 + m_Nodes[s]->m_Conn.size()*2;
+					// move all of the neighbours of current selected
+					for (int i = 0; i < (int)m_Nodes[s]->m_Conn.size(); i++)
+					{
+						m_Nodes[s]->m_Conn[i]->m_PosX = m_Nodes[s]->m_PosX + radius *(float)cos(2 * PI * i / m_Nodes[s]->m_Conn.size());
+						m_Nodes[s]->m_Conn[i]->m_PosY = m_Nodes[s]->m_PosY + radius *(float)sin(2 * PI * i / m_Nodes[s]->m_Conn.size());
+					}
+				}
+
+				// update frame when the mous button down, so we could move the node in the render loop
+				// save from using another loop
+				fn_UpdateFrame(); // this will force the program to call fn_ctrl_d3dRender()
+			}
+			// end display graph
+			
+			keyPushed = true;
+		}
+		// end if keypushed
+	}
+	// End DIK_G
+	else // default, push nothing or useless key
+		keyPushed = false;
+
+	return false;
 }
 
-void Li_GraphPlayer::fn_mouseListener()
+bool Li_GraphPlayer::fn_mouseListener()
 {
-	Li_GraphBrowser::fn_mouseListener();
-	//// Mouse Left Button ////
-	static bool alreadySelectedANode = false;
+	static bool lbd = false;
+	//// drag the node ////
+	if (s_multiSelect == 0) // click right on the node
+	{
+		static bool alreadySelectedANode = false;
+		if (s_isLBtnDown)
+		{
+			lbd = true;
+			if (!alreadySelectedANode)
+			{
+				float nodeR = m_nodeSprite.fn_getWidth() / 2.0f;
 
-	// Button events
-	if (s_MousePosAbs.x > m_btnRun.fn_getx() && s_MousePosAbs.x < m_btnRun.fn_getx() + m_btnRun.fn_getWidth() &&
-		s_MousePosAbs.y > m_btnRun.fn_gety() && s_MousePosAbs.y < m_btnRun.fn_gety() + m_btnRun.fn_getHeight())
+				// loop from the back to front, make sure always select the one on top
+				for (int i = (int)m_Nodes.size() - 1; i >= 0; i--)
+				{
+					D3DXVECTOR2 tmpVec = D3DXVECTOR2(0,0);
+					// clip nodes
+					tmpVec = m_CamMan->fn_getRelPos(D3DXVECTOR2(m_Nodes[i]->m_PosX, m_Nodes[i]->m_PosY));
+
+					if (((s_MousePosAbs.x - tmpVec.x)*(s_MousePosAbs.x - tmpVec.x) +
+						(s_MousePosAbs.y - tmpVec.y)*(s_MousePosAbs.y - tmpVec.y) <= nodeR*nodeR) &&
+						(!alreadySelectedANode))
+					{
+						m_Nodes[i]->m_isSelected = true;
+						alreadySelectedANode = true;
+
+						// only one can been selected at a time, deal with overlap nodes
+						break;
+					}
+				}
+				// end for
+
+				// if didn't click on the node, start to draw multi selection bounding
+				// record the click position
+				if (!alreadySelectedANode)
+				{
+					s_clkx = s_MousePosAbs.x;
+					s_clky = s_MousePosAbs.y;
+					s_curx = s_clkx;
+					s_cury = s_clky;
+					s_multiSelect = 1;
+				}
+			}
+			// end if
+		}
+		// mouse left up
+		else if (lbd) //if (s_isLRelease)
+		{
+			lbd = false;
+			for (unsigned int i = 0; i < m_Nodes.size(); i++)
+			{
+				// release all
+				m_Nodes[i]->m_isSelected = false;
+			}
+			alreadySelectedANode = false;
+			// end for
+		}
+		// end if
+	}
+	// now start multiselect
+	// 1. draw multi selection bounding
+	else if (s_multiSelect == 1)
 	{
 		if (s_isLBtnDown)
 		{
+			lbd = true;
+
+			s_curx = s_MousePosAbs.x;
+			s_cury = s_MousePosAbs.y;
+
+			// get the bounding
+			float top, btm, lft, rht;
+			if (s_clkx <= s_curx)
+			{
+				lft = s_clkx;
+				rht = s_curx;
+			}
+			else
+			{
+				lft = s_curx;
+				rht = s_clkx;
+			}
+
+			if (s_clky <= s_cury)
+			{
+				top = s_clky;
+				btm = s_cury;
+			}
+			else
+			{
+				top = s_cury;
+				btm = s_clky;
+			}
+			
+			// go throung every node, to see if it in the bounding
+			for (int i = 0; i < (int)m_Nodes.size(); i++)
+			{
+				D3DXVECTOR2 tmpVec = D3DXVECTOR2(0,0);
+				// clip nodes
+				tmpVec = m_CamMan->fn_getRelPos(D3DXVECTOR2(m_Nodes[i]->m_PosX, m_Nodes[i]->m_PosY));
+
+
+				// not test if the nodes in the bounding
+				if (tmpVec.x >= lft && tmpVec.x <= rht &&
+					tmpVec.y >= top && tmpVec.y <= btm)
+				{
+					m_Nodes[i]->m_isSelected = true;
+				}
+				else
+				{
+					// prevent roll back, to put thos unselected one unselected
+					m_Nodes[i]->m_isSelected = false;
+				}
+			}
+			// end for
+		}
+		else if (lbd) //if (s_isLRelease)
+		{
+			lbd = false;
+			bool hassellected = false;
+
+			for (int i = 0; i < (int)m_Nodes.size(); i++)
+			{
+				if (m_Nodes[i]->m_isSelected)
+				{
+					hassellected = true;
+					break; // save time
+				}
+			}
+			// end for
+
+			if (!hassellected)
+			{
+				s_clkx = s_MousePosAbs.x;
+				s_clky = s_MousePosAbs.y;
+				s_curx = s_clkx;
+				s_cury = s_clky;
+				s_multiSelect = 0;
+			}
+			else
+			{
+				s_multiSelect = 2;
+			}
+		}
+		// end if else
+	}
+	// 2. move multi nodes
+	else if (s_multiSelect == 2)
+	{
+		if (s_isLBtnDown && !lbd) //(s_isLClick)
+		{
+			lbd = true;
+			s_clkx = s_MousePosAbs.x;
+			s_clky = s_MousePosAbs.y;
+		}
+		else if (s_isLBtnDown)
+		{
+			s_curx = s_MousePosAbs.x;
+			s_cury = s_MousePosAbs.y;
+			
+				// move all nodes that are selected
+			for (unsigned int i = 0; i < m_Nodes.size(); i++)
+			{
+				if (m_Nodes[i]->m_isSelected)
+				{
+					m_Nodes[i]->m_PosX += (s_curx - s_clkx) / m_CamMan->m_CameraScale;
+					m_Nodes[i]->m_PosY += (s_cury - s_clky) / m_CamMan->m_CameraScale;
+				}
+			}
+
+			s_clkx = s_curx;
+			s_clky = s_cury;
+		}
+		else if (lbd)//if (s_isLRelease)
+		{
+			lbd = false;
+			for (unsigned int i = 0; i < m_Nodes.size(); i++)
+			{
+				// release all
+				m_Nodes[i]->m_isSelected = false;
+			}
+
+			s_multiSelect = 0;
+			// end for
+		}
+	}
+	//// end drag the node ////
+
+	//// Mouse Left Button ////
+	// Button events
+	// run button
+	if (s_MousePosAbs.x > m_btnRun.fn_getx() && s_MousePosAbs.x < m_btnRun.fn_getx() + m_btnRun.fn_getWidth() &&
+		s_MousePosAbs.y > m_btnRun.fn_gety() && s_MousePosAbs.y < m_btnRun.fn_gety() + m_btnRun.fn_getHeight())
+	{
+		m_btnRun.fn_setbtnState(PASS);
+
+		if (s_isLBtnDown)
+		{
 			m_btnRun.fn_setbtnState(PUSH);
+		}
+		else if (s_isLRelease)
+		{
 			m_state = RUNNING;
 		}
-		else
-			m_btnRun.fn_setbtnState(PASS);
 	}
 	else
 	{
 		m_btnRun.fn_setbtnState(IDLE);
 	}
 
+	// pause button
 	if (s_MousePosAbs.x > m_btnPause.fn_getx() && s_MousePosAbs.x < m_btnPause.fn_getx() + m_btnPause.fn_getWidth() &&
 		s_MousePosAbs.y > m_btnPause.fn_gety() && s_MousePosAbs.y < m_btnPause.fn_gety() + m_btnPause.fn_getHeight())
 	{
+		m_btnPause.fn_setbtnState(PASS);
+
 		if (s_isLBtnDown)
 		{
 			m_btnPause.fn_setbtnState(PUSH);
+		}
+		else if (s_isLRelease)
+		{
 			m_state = PAUSE;
 		}
-		else
-			m_btnPause.fn_setbtnState(PASS);
 	}
 	else
 	{
 		m_btnPause.fn_setbtnState(IDLE);
 	}
 
+	// stop button
 	if (s_MousePosAbs.x > m_btnStop.fn_getx() && s_MousePosAbs.x < m_btnStop.fn_getx() + m_btnStop.fn_getWidth() &&
 		s_MousePosAbs.y > m_btnStop.fn_gety() && s_MousePosAbs.y < m_btnStop.fn_gety() + m_btnStop.fn_getHeight())
 	{
+		m_btnStop.fn_setbtnState(PASS);
+
 		if (s_isLBtnDown)
 		{
 			m_btnStop.fn_setbtnState(PUSH);
+		}
+		else if (s_isLRelease)
+		{
 			m_state = INIT;
 		}
-		else
-			m_btnStop.fn_setbtnState(PASS);
 	}
 	else
 	{
 		m_btnStop.fn_setbtnState(IDLE);
 	}
 
-	// mouse right button down
-	if (s_isRBtnDown)
+	// Display button
+	if (s_MousePosAbs.x > m_btnDisplay.fn_getx() && s_MousePosAbs.x < m_btnDisplay.fn_getx() + m_btnDisplay.fn_getWidth() &&
+		s_MousePosAbs.y > m_btnDisplay.fn_gety() && s_MousePosAbs.y < m_btnDisplay.fn_gety() + m_btnDisplay.fn_getHeight())
 	{
-		if (!alreadySelectedANode)
+		if (s_isLClick)
 		{
-			float nodeR = m_nodeSprite.fn_getWidth() / 2.0f;
-
-			// loop from the back to front, make sure always select the one on top
-			for (int i = (int)m_Nodes.size() - 1; i >= 0; i--)
+			if (m_btnDisplay.fn_getState() == IDLE)
 			{
-				D3DXVECTOR2 tmpVec = D3DXVECTOR2(0,0);
-				// clip nodes
-				tmpVec = m_CamMan->fn_getRelPos(D3DXVECTOR2(m_Nodes[i]->m_PosX, m_Nodes[i]->m_PosY));
-
-				if (((s_MousePosAbs.x - tmpVec.x)*(s_MousePosAbs.x - tmpVec.x) +
-					(s_MousePosAbs.y - tmpVec.y)*(s_MousePosAbs.y - tmpVec.y) <= nodeR*nodeR) &&
-					(!alreadySelectedANode))
-				{
-					alreadySelectedANode = true;
-						
-					if (m_Nodes[i]->m_Agent->m_Strategy == PUREC)
-						m_Nodes[i]->m_Agent->m_Strategy = PURED;
-					else if (m_Nodes[i]->m_Agent->m_Strategy == PURED)
-						m_Nodes[i]->m_Agent->m_Strategy = PUREC;
-
-					fn_calPayoff();
-					fn_calCR();
-					// only one can been selected at a time, deal with overlap nodes
-					break;
-				}
+				m_btnDisplay.fn_setbtnState(PUSH);
+				m_displayGraph = true;
 			}
-			// end for
+			else
+			{
+				m_btnDisplay.fn_setbtnState(IDLE);
+				m_displayGraph = false;
+			}
 		}
-		// end if
+	}
 
-		// update frame when the mous button down, so we could move the node in the render loop
-		// save from using another loop
-		fn_UpdateFrame(); // this will force the program to call fn_ctrl_d3dRender()
-	}
-	// mouse right up
-	else if (!s_isLBtnDown)
+	// Log button
+	if (s_MousePosAbs.x > m_btnLog.fn_getx() && s_MousePosAbs.x < m_btnLog.fn_getx() + m_btnLog.fn_getWidth() &&
+		s_MousePosAbs.y > m_btnLog.fn_gety() && s_MousePosAbs.y < m_btnLog.fn_gety() + m_btnLog.fn_getHeight())
 	{
-		for (unsigned int i = 0; i < m_Nodes.size(); i++)
+		if (s_isLClick)
 		{
-			// release all
-			m_Nodes[i]->m_isSelected = false;
+			if (m_btnLog.fn_getState() == IDLE)
+			{
+				m_btnLog.fn_setbtnState(PUSH);
+				m_logGen = true;
+			}
+			else
+			{
+				m_btnLog.fn_setbtnState(IDLE);
+				m_logGen = false;
+			}
 		}
-		alreadySelectedANode = false;
-		// end for
 	}
-	// end if
-	//// end Mouse right Button ////
+	// end buttons ////
+
+	return false;
+}
+
+void Li_GraphPlayer::fn_log()
+{
+	m_fout<<m_GenNum<<". "<<m_CR<<endl;
 }

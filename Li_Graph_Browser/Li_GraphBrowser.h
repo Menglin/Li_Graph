@@ -15,8 +15,8 @@ public:
 	virtual HRESULT fn_ctrl_releaseD3D();
 	virtual void fn_ctrl_mainLogic();
 	virtual void fn_ctrl_d3dRender();
-	virtual void fn_keyListener();
-	virtual void fn_mouseListener();
+	virtual bool fn_keyListener();
+	virtual bool fn_mouseListener();
 
 protected:
 	Li_Sprite m_nodeSprite;

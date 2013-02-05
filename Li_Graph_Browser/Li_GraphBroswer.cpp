@@ -117,7 +117,7 @@ void Li_GraphBrowser::fn_DrawGraph()
 
 	// draw m_textBoxSprite
 	m_textBoxSprite.fn_drawAsBoarder(m_dxSpriteInterface, rct);
-
+	
 	strcpy_s(tmpStr, "Press 'ESC' to quit, press 'R' to reset position\n");
 	strcat_s(tmpStr, "Left Btn: move the Node. Right Btn: move the scene. Mouse wheel: Scale.");
 	m_font->DrawText(m_dxSpriteInterface,  tmpStr, -1, NULL, DT_CENTER, D3DCOLOR(0xFFFF0F0F));
@@ -196,7 +196,7 @@ void Li_GraphBrowser::fn_ctrl_d3dRender()
 }
 
 // Listener
-void Li_GraphBrowser::fn_keyListener()
+bool Li_GraphBrowser::fn_keyListener()
 {
 	//// Keyboard inputs ////
 	// input R to reinit the graph
@@ -210,14 +210,18 @@ void Li_GraphBrowser::fn_keyListener()
 	if(m_DxInput->m_KeyState[DIK_ESCAPE] & 0x80)
 		PostQuitMessage(0);
 	//// Keyboard inputs ////
+
+	return false;
 }
 
-void Li_GraphBrowser::fn_mouseListener()
+// return true if button is in use
+bool Li_GraphBrowser::fn_mouseListener()
 {
 	//// Mouse Left Button ////
 	static bool alreadySelectedANode = false;
+
 	// mouse left button down
-	if (s_isLBtnDown)
+	if (s_isLClick)
 	{
 		if (!alreadySelectedANode)
 		{
@@ -245,12 +249,10 @@ void Li_GraphBrowser::fn_mouseListener()
 		}
 		// end if
 
-		// update frame when the mous button down, so we could move the node in the render loop
-		// save from using another loop
-		fn_UpdateFrame(); // this will force the program to call fn_ctrl_d3dRender()
+		return true;
 	}
 	// mouse left up
-	else
+	else if (s_isLRelease)
 	{
 		for (unsigned int i = 0; i < m_Nodes.size(); i++)
 		{
@@ -269,4 +271,6 @@ void Li_GraphBrowser::fn_mouseListener()
 	{
 	}
 	//// end Mouse Right Button ////
+
+	return false;
 }

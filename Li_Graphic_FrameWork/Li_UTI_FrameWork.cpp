@@ -10,6 +10,10 @@ bool Li_FW::s_ResetD3DDevice	= false;
 D3DXVECTOR2 Li_FW::s_MousePosAbs;
 bool Li_FW::s_isLBtnDown		= false;
 bool Li_FW::s_isRBtnDown		= false;
+bool Li_FW::s_isLClick			= false;
+bool Li_FW::s_isRClick			= false;
+bool Li_FW::s_isLRelease		= false;
+bool Li_FW::s_isRRelease		= false;
 
   /*------------------
  / Public Functions /

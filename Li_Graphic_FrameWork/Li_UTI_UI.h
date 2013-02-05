@@ -11,17 +11,22 @@ class Li_btnSprite : public Li_Sprite
 public:
 	Li_btnSprite()
 	{
-		m_bntState = IDLE;
+		m_btnState = IDLE;
 	}
 
 	void fn_setbtnState(BTN_STATE s)
 	{
-		m_bntState = s;
+		m_btnState = s;
+	}
+
+	BTN_STATE fn_getState()
+	{
+		return m_btnState;
 	}
 
 	HRESULT fn_drawButton(LPD3DXSPRITE dxSpriteInterface);
 protected:
-	BTN_STATE m_bntState;
+	BTN_STATE m_btnState;
 };
 
 #endif

@@ -39,8 +39,8 @@ protected:
 	// control the graphics using overload function
 	virtual void fn_ctrl_mainLogic() = 0;
 	virtual void fn_ctrl_d3dRender() = 0;
-	virtual void fn_keyListener(){};
-	virtual void fn_mouseListener(){};
+	virtual bool fn_keyListener(){return false;};
+	virtual bool fn_mouseListener(){return false;};
 
 	// tell the engine to update the frame
 	static inline void fn_UpdateFrame(){s_UpdateGraphic = true;}
@@ -80,7 +80,11 @@ protected:
 	// Mouse Position
 	static D3DXVECTOR2	s_MousePosAbs;	// this is for the old winapi mouse, this is the absolute value
 	static bool			s_isLBtnDown;	// L btn down for Winapi
-	static bool			s_isRBtnDown;	// L btn down for Winapi
+	static bool			s_isRBtnDown;	// R btn down for Winapi
+	static bool			s_isLClick;		// L btn click for Winapi
+	static bool			s_isRClick;		// R btn click for Winapi
+	static bool			s_isLRelease;	// L btn release for Winapi
+	static bool			s_isRRelease;	// R btn release for Winapi
 
 	// Directx Input, using dxinput register to register a pointer from outside, this one is only accessable from inside
 	Li_DxInput	*m_DxInput;
