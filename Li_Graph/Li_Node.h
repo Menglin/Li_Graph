@@ -95,6 +95,22 @@ public:
 		m_SubGraphConn	= 0;
 	}
 
+	bool isconnectedto(Li_Node* node)
+	{
+		bool isconn = false;
+		int tsize = m_Conn.size();
+		for (int i = 0; i < tsize; i++)
+		{
+			if (m_Conn[i] == node)
+			{
+				isconn = true;
+				break;
+			}
+		}
+
+		return isconn;
+	}
+
 	// member variables ////
 	Li_Agent* m_Agent;
 
@@ -109,6 +125,8 @@ public:
 	float	m_PosX;
 	float	m_PosY;
 	bool	m_isSelected;
+
+	bool	m_isVisited;		// used to do the travel
 };
 
 #endif

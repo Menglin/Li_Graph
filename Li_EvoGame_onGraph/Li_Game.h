@@ -10,8 +10,8 @@
 class Li_Game
 {
 public:
-	virtual void fn_Play(Li_Node &a, Li_Node &b){a; b;}
-	virtual void fn_Evolve(Li_Node &a){}
+	virtual void fn_Play(Li_Node *a, Li_Node *b, bool isDoubleDir) = 0;
+	virtual void fn_Evolve(Li_Node *a) = 0;
 };
 
   ////////////////////////
@@ -72,7 +72,7 @@ public:
 		return true;
 	}
 
-	void fn_Play(Li_Node *a, Li_Node *b, bool isDoubleDir)
+	virtual void fn_Play(Li_Node *a, Li_Node *b, bool isDoubleDir)
 	{
 		// 0: Cooperate;
 		// 1: Defecte
@@ -104,7 +104,7 @@ public:
 	}
 
 	// Evolve Strategy ////
-	void fn_Evolve(Li_Node *a)
+	virtual void fn_Evolve(Li_Node *a)
 	{
 		// randomly take a neighbor, if it have better payoff, take its strategy by a probability
 		/*
@@ -240,6 +240,44 @@ public:
 		// end if
 	}
 	// end function
+	*/
+
+	/*
+	virtual void fn_EvolveRel(Li_Node *a)
+	{
+		double tmpP = a->m_Agent->m_AveragePayoff;
+		int tmpOrder = -1;
+
+		// strategy learning
+		int tsize = a->m_Conn.size();
+		for (int i = 0; i < tsize; i++)
+		{
+			int totalN = a->m_Conn[i]->m_Conn.size();
+			int commonN = 0;
+			for (int j = 0; j < totalN; j++)
+			{
+				if (a->isconnectedto(a->m_Conn[i]->m_Conn[j]))
+					commonN++;
+			}
+
+			// calculate the weighted payoff
+			double weightedP = a->m_Conn[i]->m_Agent->m_AveragePayoff * (commonN+1) / totalN;
+
+			if (tmpP < weightedP)
+			{
+				tmpP = weightedP;
+				tmpOrder = i;
+			}
+			// end if
+		}
+		// end for
+
+		// evolve the strategy
+		if (tmpOrder != -1)
+			a->m_Agent->m_UpdateStrategy = a->m_Conn[tmpOrder]->m_Agent->m_Strategy;
+		else
+			a->m_Agent->m_UpdateStrategy = a->m_Agent->m_Strategy;
+	}
 	*/
 };
 // end class

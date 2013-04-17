@@ -1,11 +1,15 @@
 #ifndef LI_GRAPH_PLAYER_H
 #define LI_GRAPH_PLAYER_H
 
-#include "../Li_Graph_Browser/Li_GraphBrowser.h"
+#include "../Li_Graphic_Framework/Li_UTI_FrameWork.h"
+#include "../Li_Graph/Li_Graph.h"
 #include "../Li_Graphic_FrameWork/Li_UTI_UI.h"
 
 #include "Li_Game.h"
 #include <time.h>
+
+#pragma comment(lib, "../debug/Li_Graphic_FrameWork.lib")
+#pragma comment(lib, "../debug/Li_Graph.lib")
 
 static const DWORD g_UpdateTime = 200; // in millisecond
 
@@ -16,7 +20,7 @@ enum ENUM_STATE
 	PAUSE
 };
 
-class Li_GraphPlayer : public Li_GraphBrowser, public Li_PDGame
+class Li_GraphPlayer : public Li_Graph, public Li_FW, public Li_PDGame
 {
 public:
 	Li_GraphPlayer()
@@ -25,16 +29,23 @@ public:
 		m_displayGraph = true;
 		m_logGen = true;
 
+		// the log file will be opend if the file name has been assigned
+		/*
 		m_fout.open("log_cr.txt", ios::app);
 
 		if (!m_fout.is_open())
 			m_fout.open("log_cr.txt", ios::out);
+		*/
 	}
 
 	~Li_GraphPlayer()
 	{
-		m_fout.close();
+		if (m_fout != NULL)
+			m_fout.close();
 	}
+
+	virtual void fn_Play(Li_Node *a, Li_Node *b, bool isDoubleDir){Li_PDGame::fn_Play(a,b,isDoubleDir);}
+	virtual void fn_Evolve(Li_Node *a){Li_PDGame::fn_Evolve(a);}
 
 	virtual void fn_DrawGraph();
 
@@ -56,8 +67,23 @@ public:
 	void fn_drawUI();
 
 	void fn_log();
+	void fn_setLogFile()
+	{
+		// if already opened it, close it first
+		// to prevent the new logfile not be opened when the user change the graph file
+		if (m_fout != NULL)
+			m_fout.close();
+		// the log file will be opend if the file name has been assigned
+		m_fout.open(m_logName, ios::app);
+
+		if (!m_fout.is_open())
+			m_fout.open(m_logName, ios::out);
+	}
 
 protected :
+	Li_Sprite m_nodeSprite;
+	Li_Sprite m_textBoxSprite;
+
 	DWORD m_LastUpdateTime;
 	int m_GenNum;
 	double m_CR;
@@ -69,6 +95,11 @@ protected :
 	Li_btnSprite m_btnStop;
 	Li_btnSprite m_btnDisplay;
 	Li_btnSprite m_btnLog;
+	
+	Li_lstBtnSprite m_lstBtnGraphLayout;
+
+	Li_btnSprite m_btnSave;
+	Li_btnSprite m_btnSaveMatrix;
 
 	bool m_displayGraph;
 	bool m_logGen;

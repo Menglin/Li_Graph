@@ -11,9 +11,9 @@ namespace Li_GameCtrl
 	{
 		mygp = new Li_GraphPlayer();
 		mygp->fn_InitFW(hInstance, nCmdShow, "Li Graph Player");
-
-		mygp->fn_LoadGraph("graph1.txt");
-		mygp->fn_InitNodePos();
+		//mygp->fn_setGraphName("graph1.txt");
+		//mygp->fn_LoadGraph();
+		//mygp->fn_InitNodePos(L_CIRCLE); // the position are saved in the file now
 		mygp->fn_initStrategy();
 	}
 

@@ -1,6 +1,7 @@
 #ifndef LI_UTI_FW_H
 #define LI_UTI_FW_H
 
+#include <string>
 #include "Li_UTI_Win32.h"
 #include "Li_UTI_D3D9.h"
 #include "Li_UTI_Draw.h"
@@ -23,6 +24,9 @@ public:
 
 	virtual HRESULT fn_ctrl_initD3D();
 	virtual HRESULT fn_ctrl_releaseD3D();
+
+	std::string openfilenameStr(char *filter = "All Files (*.*)\0*.*\0", HWND owner = NULL);
+	char* Li_FW::openfilename(char *filter = "All Files (*.*)\0*.*\0", HWND owner = NULL);
 
 	// Message Loop
 	HRESULT fn_MsgLoop();
@@ -80,14 +84,15 @@ protected:
 	// Mouse Position
 	static D3DXVECTOR2	s_MousePosAbs;	// this is for the old winapi mouse, this is the absolute value
 	static bool			s_isLBtnDown;	// L btn down for Winapi
-	static bool			s_isRBtnDown;	// R btn down for Winapi
 	static bool			s_isLClick;		// L btn click for Winapi
-	static bool			s_isRClick;		// R btn click for Winapi
+	static bool			s_isLDBClick;	// L btn double click
 	static bool			s_isLRelease;	// L btn release for Winapi
+	static bool			s_isRBtnDown;	// R btn down for Winapi
+	static bool			s_isRClick;		// R btn click for Winapi
 	static bool			s_isRRelease;	// R btn release for Winapi
 
 	// Directx Input, using dxinput register to register a pointer from outside, this one is only accessable from inside
-	Li_DxInput	*m_DxInput;
+	Li_DxInput			*m_DxInput;
 	// POINT m_DxMousePosAbs;
 
 	// for camera

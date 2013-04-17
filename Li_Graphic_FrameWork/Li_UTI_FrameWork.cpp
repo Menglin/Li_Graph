@@ -9,10 +9,11 @@ bool Li_FW::s_ResetD3DDevice	= false;
 // for winapi mouse
 D3DXVECTOR2 Li_FW::s_MousePosAbs;
 bool Li_FW::s_isLBtnDown		= false;
-bool Li_FW::s_isRBtnDown		= false;
 bool Li_FW::s_isLClick			= false;
-bool Li_FW::s_isRClick			= false;
+bool Li_FW::s_isLDBClick		= false;
 bool Li_FW::s_isLRelease		= false;
+bool Li_FW::s_isRBtnDown		= false;
+bool Li_FW::s_isRClick			= false;
 bool Li_FW::s_isRRelease		= false;
 
   /*------------------
@@ -153,6 +154,83 @@ HRESULT Li_FW::fn_ctrl_releaseD3D()
 	}
 
 	return S_OK;
+}
+
+std::string Li_FW::openfilenameStr(char *filter, HWND owner)
+{
+	OPENFILENAME ofn;
+	char fileName[MAX_PATH] = "";
+	ZeroMemory(&ofn, sizeof(ofn));
+	ofn.lStructSize = sizeof(OPENFILENAME);
+	ofn.hwndOwner = owner;
+	ofn.lpstrFilter = filter;
+	ofn.lpstrFile = fileName;
+	ofn.nMaxFile = MAX_PATH;
+	ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
+	ofn.lpstrDefExt = "";
+	std::string fileNameStr;
+	if ( GetOpenFileName(&ofn) )
+		fileNameStr = fileName;
+	return fileNameStr;
+}
+
+char* Li_FW::openfilename(char *filter, HWND owner)
+{
+	ShowCursor(true);
+
+	OPENFILENAME ofn;
+	static char fileName[MAX_PATH] = "";
+	ZeroMemory(&ofn, sizeof(ofn));
+	ofn.lStructSize = sizeof(OPENFILENAME);
+	ofn.hwndOwner = owner;
+	ofn.lpstrFilter = filter;
+	ofn.lpstrFile = fileName;
+	ofn.nMaxFile = MAX_PATH;
+	ofn.Flags = OFN_EXPLORER | OFN_PATHMUSTEXIST; //OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
+	ofn.lpstrDefExt = "";
+	
+	if (!GetOpenFileName(&ofn))
+	{
+		strcpy_s(fileName, sizeof(fileName), "");
+	}
+	
+	ShowCursor(false);
+	
+	// get only the name of the file, take the path and the extension name out
+
+	// start from strlen -4 because the map file is .txt file,
+	// the length of ".txt" is 4
+	if (strlen(fileName) >=5 )
+	{
+		char tmpName[MAX_PATH];
+		int j = 0;
+		for (int i = strlen(fileName) - 5; i >= 0; i--)
+		{
+			// break at the first '\\'
+			if (fileName[i] == '\\')
+			{
+				break;
+			}
+
+			tmpName[j] = fileName[i];
+			j++;
+		}
+		// dont forget to put the '\0' in
+		tmpName[j] = '\0';
+		
+		// because we got it through backward, so the tmpName needs to be reversed
+		for (int k = 0; k < j/2; k++)
+		{
+			char tc;
+			tc = tmpName[k];
+			tmpName[k] = tmpName[j - k - 1];
+			tmpName[j - k - 1] = tc;
+		}
+
+		strcpy_s(fileName, sizeof(fileName), tmpName);
+	}
+
+	return fileName;
 }
 
 // Main Message Loop

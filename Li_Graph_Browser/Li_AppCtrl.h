@@ -11,9 +11,9 @@ namespace Li_AppCtrl
 	{
 		mygb = new Li_GraphBrowser();
 		mygb->fn_InitFW(hInstance, nCmdShow, "Li Graph Browser");
-
-		mygb->fn_LoadGraph("graph1.txt");
-		mygb->fn_InitNodePos();
+		mygb->fn_setGraphName("graph1.txt");
+		mygb->fn_LoadGraph();
+		mygb->fn_InitNodePos(L_CIRCLE);
 	}
 
 	static void go()

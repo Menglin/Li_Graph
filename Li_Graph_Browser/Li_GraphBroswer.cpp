@@ -192,7 +192,8 @@ void Li_GraphBrowser::fn_ctrl_mainLogic()
 
 void Li_GraphBrowser::fn_ctrl_d3dRender()
 {
-	fn_DrawGraph();
+	if (!m_Nodes.empty())
+		fn_DrawGraph();
 }
 
 // Listener
@@ -202,7 +203,7 @@ bool Li_GraphBrowser::fn_keyListener()
 	// input R to reinit the graph
 	if(m_DxInput->m_KeyState[DIK_R] & 0x80)
 	{
-		fn_InitNodePos();
+		fn_InitNodePos(L_CIRCLE);
 		fn_UpdateFrame();
 	}
 

@@ -30,7 +30,7 @@ LRESULT CALLBACK Li_FW::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
 		case WM_SETCURSOR:
 			{
 				// Hide Cursor in Client Rectangle but not on Title Bar
-				 WORD ht = LOWORD(lParam);
+				WORD ht = LOWORD(lParam);
 				static bool hiddencursor = false;
 				if (HTCLIENT==ht && !hiddencursor)
 				{
@@ -49,7 +49,7 @@ LRESULT CALLBACK Li_FW::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
 				// this is for the old winapi mouse, now I updated to directx input
 				s_MousePosAbs.x = LOWORD (lParam);
 				s_MousePosAbs.y = HIWORD (lParam);
-
+				
 				fn_UpdateFrame();
 			} break;
 
@@ -63,7 +63,14 @@ LRESULT CALLBACK Li_FW::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
 		case WM_LBUTTONUP:
 			{
 				s_isLBtnDown = false;
+				s_isLDBClick = false;
 				s_isLRelease = true;
+				fn_UpdateFrame();
+			} break;
+
+		case WM_LBUTTONDBLCLK:
+			{
+				s_isLDBClick = true;
 				fn_UpdateFrame();
 			} break;
 

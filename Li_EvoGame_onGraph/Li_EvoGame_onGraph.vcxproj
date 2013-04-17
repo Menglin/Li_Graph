@@ -101,10 +101,6 @@
       <Project>{cd3293c7-f294-4325-9bc2-e0ea2dbfee04}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
-    <ProjectReference Include="..\Li_Graph_Browser\Li_Graph_Browser.vcxproj">
-      <Project>{b4f1c331-d056-48e0-b67b-40773ebd2504}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
