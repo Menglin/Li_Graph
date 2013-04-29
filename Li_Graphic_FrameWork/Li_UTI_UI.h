@@ -69,6 +69,11 @@ public:
 		m_curSelect = i;
 	}
 
+	void fn_setSize(int i)
+	{
+		m_lstSize = i;
+	}
+
 	HRESULT fn_drawButton(LPD3DXSPRITE dxSpriteInterface);
 	HRESULT fn_drawButtonList(LPD3DXSPRITE dxSpriteInterface);
 	bool fn_isMouseOn(D3DXVECTOR2 mousepos);

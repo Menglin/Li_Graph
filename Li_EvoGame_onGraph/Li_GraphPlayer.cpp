@@ -195,7 +195,7 @@ void Li_GraphPlayer::fn_drawUI()
 	// Plot Node Info
 	RECT rct;
 	
-	char tmpStr[256];
+	char tmpStr[512];
 
 	// if the file name have been assigned
 	if (!m_Nodes.empty())
@@ -212,8 +212,8 @@ void Li_GraphPlayer::fn_drawUI()
 		strcat_s(tmpStr, ParseStr(m_GraphSize));
 		strcat_s(tmpStr, "\nAverage Degree: ");
 		strcat_s(tmpStr, ParseStr(m_AvgDegree, 6));
-		strcat_s(tmpStr, "\nTotal Clustering Coefficient: ");
-		strcat_s(tmpStr, ParseStr(m_TotalCC, 6));
+		strcat_s(tmpStr, "\nTransitivity: ");
+		strcat_s(tmpStr, ParseStr(m_Transitivity, 6));
 		strcat_s(tmpStr, "\nAverage Clustering Coefficient: ");
 		strcat_s(tmpStr, ParseStr(m_AvgCC, 6));
 		strcat_s(tmpStr, "\nGeneration Number: ");
@@ -225,14 +225,16 @@ void Li_GraphPlayer::fn_drawUI()
 	// user manu
 	rct.left = m_WinWidth / 2 - 310;
 	rct.right = m_WinWidth / 2 + 310;
-	rct.top = m_WinHeight - 120;
+	rct.top = m_WinHeight - 150;
 	rct.bottom = m_WinHeight - 50;
 
 	// draw m_textBoxSprite
 	m_textBoxSprite.fn_drawAsBoarder(m_dxSpriteInterface, rct);
 	
-	strcpy_s(tmpStr, "Press 'ESC' to quit, press '1/2/3' to run/pause/stop the evolution\n");
-	strcat_s(tmpStr, "Left Btn: move the Node. Right Btn: move the scene. Mouse wheel: Scale.");
+	strcpy_s(tmpStr, "'ESC':quit, '1/2/3':run/pause/stop, 'G':gather nodes, 'Del':remove node \n");
+	strcat_s(tmpStr, "Hold 'Shift':new node, Hold 'Ctrl':new edge, Hold 'Alt':remove edge \n");
+	strcat_s(tmpStr, "Left Btn: move the Node. Right Btn: move the scene. Mouse wheel: Scale. \n");
+	strcat_s(tmpStr, "Double Click(or C/D): change strategy to C or D.");
 	m_font->DrawText(m_dxSpriteInterface,  tmpStr, -1, NULL, DT_CENTER, D3DCOLOR(0xFFFF0F0F));
 
 	// draw button
@@ -241,6 +243,8 @@ void Li_GraphPlayer::fn_drawUI()
 	m_btnStop.fn_drawButton(m_dxSpriteInterface);
 	m_btnDisplay.fn_drawButton(m_dxSpriteInterface);
 	m_btnLog.fn_drawButton(m_dxSpriteInterface);
+	m_btnNew.fn_drawButton(m_dxSpriteInterface);
+	m_btnOpen.fn_drawButton(m_dxSpriteInterface);
 	m_btnSave.fn_drawButton(m_dxSpriteInterface);
 	m_btnSaveMatrix.fn_drawButton(m_dxSpriteInterface);
 
@@ -285,17 +289,24 @@ HRESULT Li_GraphPlayer::fn_ctrl_initD3D()
 	m_btnDisplay.fn_setPosition(m_WinWidth / 2.0f + 32.0f, m_WinHeight-48.0f);
 	
 	m_btnLog.fn_setTexture(m_d3dDev, "../res/btnLog.png");
-	m_btnLog.fn_setbtnState(PUSH);
+	m_btnLog.fn_setbtnState(IDLE);
 	m_btnLog.fn_setPosition(m_WinWidth / 2.0f + 80.0f, m_WinHeight-48.0f);
 	
+	m_btnNew.fn_setTexture(m_d3dDev, "../res/btnNew.png");
+	m_btnNew.fn_setbtnState(IDLE);
+	m_btnNew.fn_setPosition(50.0f, 10.0f);
 	
+	m_btnOpen.fn_setTexture(m_d3dDev, "../res/btnOpen.png");
+	m_btnOpen.fn_setbtnState(IDLE);
+	m_btnOpen.fn_setPosition(90.0f, 10.0f);
+
 	m_btnSave.fn_setTexture(m_d3dDev, "../res/btnSave.png");
 	m_btnSave.fn_setbtnState(IDLE);
-	m_btnSave.fn_setPosition(50.0f, 10.0f);
+	m_btnSave.fn_setPosition(130.0f, 10.0f);
 
 	m_btnSaveMatrix.fn_setTexture(m_d3dDev, "../res/btnSaveMatrix.png");
 	m_btnSaveMatrix.fn_setbtnState(IDLE);
-	m_btnSaveMatrix.fn_setPosition(90.0f, 10.0f);
+	m_btnSaveMatrix.fn_setPosition(170.0f, 10.0f);
 
 	m_lstBtnGraphLayout.fn_setTexture(m_d3dDev, "../res/lstBtnGraphLayout.png");
 	m_lstBtnGraphLayout.fn_setPosition(10.0f, 10.0f);
@@ -311,6 +322,18 @@ HRESULT Li_GraphPlayer::fn_ctrl_releaseD3D()
 	// release textbox texture
 	m_textBoxSprite.fn_releaseTexture();
 	//// release new d3d obj here ////
+
+	// release button objects ////
+	m_btnRun.fn_releaseTexture();
+	m_btnPause.fn_releaseTexture();
+	m_btnStop.fn_releaseTexture();
+	m_btnDisplay.fn_releaseTexture();
+	m_btnLog.fn_releaseTexture();
+	m_btnNew.fn_releaseTexture();
+	m_btnOpen.fn_releaseTexture();
+	m_btnSave.fn_releaseTexture();
+	m_btnSaveMatrix.fn_releaseTexture();
+	m_lstBtnGraphLayout.fn_releaseTexture();
 
 	return Li_FW::fn_ctrl_releaseD3D();
 }
@@ -406,23 +429,27 @@ void Li_GraphPlayer::fn_calPayoff()
 		// 2. calculate payoff
 		for (int i = 0; i < tnum; i++)
 		{
-			// self interaction
-			if (isSelfInteract)
+			if (!m_Nodes[i]->m_Conn.empty())
 			{
-				if (m_Nodes[i]->m_Agent->m_TotalPayoff == C)
-					m_Nodes[i]->m_Agent->m_TotalPayoff += R;
-				else
-					m_Nodes[i]->m_Agent->m_TotalPayoff += P;
-			}
+				// self interaction
+				if (isSelfInteract)
+				{
+					if (m_Nodes[i]->m_Agent->m_TotalPayoff == C)
+						m_Nodes[i]->m_Agent->m_TotalPayoff += R;
+					else
+						m_Nodes[i]->m_Agent->m_TotalPayoff += P;
+				}
 
-			int tsize = m_Nodes[i]->m_Conn.size();
-			// get the total payoff
-			for (int j = 0; j < tsize; j++)
-			{
-				fn_Play(m_Nodes[i], m_Nodes[i]->m_Conn[j], false);
+				int tsize = m_Nodes[i]->m_Conn.size();
+				// get the total payoff
+				for (int j = 0; j < tsize; j++)
+				{
+					fn_Play(m_Nodes[i], m_Nodes[i]->m_Conn[j], false);
+				}
+				// for the average payoff
+				m_Nodes[i]->m_Agent->m_AveragePayoff = m_Nodes[i]->m_Agent->m_TotalPayoff / tsize;
 			}
-			// for the average payoff
-			m_Nodes[i]->m_Agent->m_AveragePayoff = m_Nodes[i]->m_Agent->m_TotalPayoff / tsize;
+			//end if
 		}
 		// end for
 	}
@@ -742,6 +769,8 @@ bool Li_GraphPlayer::fn_keyListener()
 
 bool Li_GraphPlayer::fn_mouseListener()
 {
+	fn_EditGraph();
+
 	// no need for node detection for empyt graph
 	if (!m_Nodes.empty())
 	{
@@ -749,7 +778,7 @@ bool Li_GraphPlayer::fn_mouseListener()
 		// the message is not very reliable for the time delay
 		static bool lbd = false;
 		//// drag the node ////
-		if (s_multiSelect == 0) // click right on the node
+		if (s_multiSelect == 0)
 		{
 			static bool alreadySelectedANode = false;
 
@@ -780,7 +809,7 @@ bool Li_GraphPlayer::fn_mouseListener()
 
 						if (((s_MousePosAbs.x - tmpVec.x)*(s_MousePosAbs.x - tmpVec.x) +
 							(s_MousePosAbs.y - tmpVec.y)*(s_MousePosAbs.y - tmpVec.y) <= nodeR*nodeR) &&
-							(!alreadySelectedANode))
+							(!alreadySelectedANode)) // click right on the node
 						{
 							m_Nodes[i]->m_isSelected = true;
 							alreadySelectedANode = true;
@@ -1087,6 +1116,64 @@ bool Li_GraphPlayer::fn_mouseListener()
 		}
 	}
 
+	// New button
+	if (m_btnNew.fn_isMouseOn(s_MousePosAbs))
+	{
+		m_btnNew.fn_setbtnState(PASS);
+
+		if (s_isLBtnDown)
+		{
+			m_btnNew.fn_setbtnState(PUSH);
+		}
+		else if (s_isLRelease)
+		{
+			fn_DestroyGraph();
+		}
+	}
+	else
+	{
+		m_btnNew.fn_setbtnState(IDLE);
+	}
+
+	// Open button
+	if (m_btnOpen.fn_isMouseOn(s_MousePosAbs))
+	{
+		m_btnOpen.fn_setbtnState(PASS);
+
+		if (s_isLBtnDown)
+		{
+			m_btnOpen.fn_setbtnState(PUSH);
+		}
+		else if (s_isLRelease)
+		{
+			// get graph file name
+			strcpy_s(m_gpName, sizeof(m_gpName), openfilename());
+
+			// test again to prevent user select nothing just return
+			if (strcmp(m_gpName, "") != 0)
+			{
+				// get log file name
+				strcpy_s(m_logName, sizeof(m_logName), m_gpName);
+				// set graph file name
+				strcat_s(m_gpName, sizeof(m_gpName), ".txt");
+				// set log file name
+				strcat_s(m_logName, sizeof(m_logName), "_log.txt");
+
+				fn_DestroyGraph();
+				fn_LoadGraph();
+				fn_initStrategy();
+
+				if (m_logGen)
+					fn_setLogFile();
+			}
+			// end if if (strcmp(m_gpName, "") != 0)
+		}
+	}
+	else
+	{
+		m_btnOpen.fn_setbtnState(IDLE);
+	}
+
 	// Save button
 	if (m_btnSave.fn_isMouseOn(s_MousePosAbs))
 	{
@@ -1170,27 +1257,6 @@ bool Li_GraphPlayer::fn_mouseListener()
 			m_lstBtnGraphLayout.fn_select(s_MousePosAbs);
 			if (m_lstBtnGraphLayout.fn_getCurrentSelected() == 0)
 			{
-				// get graph file name
-				strcpy_s(m_gpName, sizeof(m_gpName), openfilename());
-
-				// test again to prevent user select nothing just return
-				if (strcmp(m_gpName, "") != 0)
-				{
-					// get log file name
-					strcpy_s(m_logName, sizeof(m_logName), m_gpName);
-					// set graph file name
-					strcat_s(m_gpName, sizeof(m_gpName), ".txt");
-					// set log file name
-					strcat_s(m_logName, sizeof(m_logName), "_log.txt");
-
-					fn_DestroyGraph();
-					fn_LoadGraph();
-					fn_initStrategy();
-
-					if (m_logGen)
-						fn_setLogFile();
-				}
-				// end if if (strcmp(m_gpName, "") != 0)
 			}
 			else if (m_lstBtnGraphLayout.fn_getCurrentSelected() == 1)
 			{
@@ -1211,6 +1277,273 @@ bool Li_GraphPlayer::fn_mouseListener()
 	// end list buttons ////
 
 	return false;
+}
+
+void Li_GraphPlayer::fn_EditGraph()
+{
+	static bool lbtnd = false;
+	static int lbcounter = 0; // count how many times left btn down
+
+	if (s_isLBtnDown && !lbtnd)
+	{
+		lbtnd = true;
+
+		  //////////////////
+		 // Add New Node //
+		//////////////////
+		// if L shift is pushed, add an new node
+		if (m_DxInput->m_KeyState[DIK_LSHIFT] & 0x80)
+		{
+			// only add if the mouse click on white space
+			bool isSpace = true;
+			// test if is Space
+			for (int i = (int)m_Nodes.size() - 1; i >= 0; i--)
+			{
+				float nodeR = m_nodeSprite.fn_getWidth() / 2.0f;
+				D3DXVECTOR2 tmpVec = D3DXVECTOR2(0,0);
+				// clip nodes
+				tmpVec = m_CamMan->fn_getRelPos(D3DXVECTOR2(m_Nodes[i]->m_PosX, m_Nodes[i]->m_PosY));
+
+				if (((s_MousePosAbs.x - tmpVec.x)*(s_MousePosAbs.x - tmpVec.x) +
+					(s_MousePosAbs.y - tmpVec.y)*(s_MousePosAbs.y - tmpVec.y) <= nodeR*nodeR)) // click right on the node
+				{
+					isSpace = false;
+
+					// only one can been selected at a time, deal with overlap nodes
+					break;
+				}
+				// end if
+			}
+			// end for
+
+			if (isSpace)
+			{
+				D3DXVECTOR2 tmpMousePos = D3DXVECTOR2(0,0);
+				// clip mousePos
+				tmpMousePos = m_CamMan->fn_getAbsPos(D3DXVECTOR2(s_MousePosAbs.x, s_MousePosAbs.y));
+
+				Li_Node* tmpNode = new Li_Node(m_GraphSize);
+				tmpNode->m_PosX = tmpMousePos.x;
+				tmpNode->m_PosY = tmpMousePos.y;
+				m_Nodes.push_back(tmpNode);
+				m_GraphSize++;
+
+				// calculate the graph attribute
+				fn_calGraphAttributes();
+			}
+			// end if
+		}
+		// end Add New Node ////
+
+		  //////////////////
+		 // Add New Edge //
+		//////////////////
+		else if (m_DxInput->m_KeyState[DIK_LCONTROL] & 0x80)
+		{
+			// get the node first
+			int tmpNode = -1; // -1 means none node selected
+			for (int i = (int)m_Nodes.size() - 1; i >= 0; i--)
+			{
+				float nodeR = m_nodeSprite.fn_getWidth() / 2.0f;
+				D3DXVECTOR2 tmpVec = D3DXVECTOR2(0,0);
+				// clip nodes
+				tmpVec = m_CamMan->fn_getRelPos(D3DXVECTOR2(m_Nodes[i]->m_PosX, m_Nodes[i]->m_PosY));
+
+				if (((s_MousePosAbs.x - tmpVec.x)*(s_MousePosAbs.x - tmpVec.x) +
+					(s_MousePosAbs.y - tmpVec.y)*(s_MousePosAbs.y - tmpVec.y) <= nodeR*nodeR)) // click right on the node
+				{
+					tmpNode = i;
+
+					// only one can been selected at a time, deal with overlap nodes
+					break;
+				}
+				// end if
+			}
+			// end for
+
+			// if there are node selected
+			if (tmpNode >= 0)
+			{
+				static int startV, endV;
+				// counter = 0, the start vertex of the edge
+				if (lbcounter == 0)
+				{
+					startV = tmpNode;
+					lbcounter = 1;
+				}
+				else
+				{
+					// if not the same Node, and the nodes are not already linked already
+					if (tmpNode != startV && !fn_Islinked(m_Nodes[startV], m_Nodes[tmpNode]))
+					{
+						// link the nodes
+						endV = tmpNode;
+						m_Nodes[startV]->m_Conn.push_back(m_Nodes[endV]);
+						m_Nodes[endV]->m_Conn.push_back(m_Nodes[startV]);
+						//Li_Edge *tmpEdge = new Li_Edge(startV, endV);
+						//m_Edges.push_back(tmpEdge);
+
+						// calculate the graph attribute
+						fn_calGraphAttributes();
+					}
+					lbcounter = 0;
+				}
+				// end if
+			}
+			// end if
+		}
+		// end Add New Edge ////
+		
+		  /////////////////
+		 // Remove Edge //
+		/////////////////
+		else if(m_DxInput->m_KeyState[DIK_LMENU] & 0x80) // left alt
+		{
+			// get the node first
+			int tmpNode = -1; // -1 means none node selected
+			for (int i = (int)m_Nodes.size() - 1; i >= 0; i--)
+			{
+				float nodeR = m_nodeSprite.fn_getWidth() / 2.0f;
+				D3DXVECTOR2 tmpVec = D3DXVECTOR2(0,0);
+				// clip nodes
+				tmpVec = m_CamMan->fn_getRelPos(D3DXVECTOR2(m_Nodes[i]->m_PosX, m_Nodes[i]->m_PosY));
+
+				if (((s_MousePosAbs.x - tmpVec.x)*(s_MousePosAbs.x - tmpVec.x) +
+					(s_MousePosAbs.y - tmpVec.y)*(s_MousePosAbs.y - tmpVec.y) <= nodeR*nodeR)) // click right on the node
+				{
+					tmpNode = i;
+
+					// only one can been selected at a time, deal with overlap nodes
+					break;
+				}
+				// end if
+			}
+			// end for
+
+			// if there are node selected
+			if (tmpNode >= 0)
+			{
+				static int startV, endV;
+				// counter = 0, the start vertex of the edge
+				if (lbcounter == 0)
+				{
+					startV = tmpNode;
+					lbcounter = 1;
+				}
+				else
+				{
+					// if not the same Node, and the nodes are already linked already
+					if (tmpNode != startV && fn_Islinked(m_Nodes[startV], m_Nodes[tmpNode]))
+					{
+						// link the nodes
+						endV = tmpNode;
+						int pConn1 = -1, pConn2 = -1;
+						for (unsigned int i = 0; i < m_Nodes[startV]->m_Conn.size(); i++)
+						{
+							if (m_Nodes[startV]->m_Conn[i]->m_ID == endV)
+								pConn1 = i;
+						}
+						
+						for (unsigned int i = 0; i < m_Nodes[endV]->m_Conn.size(); i++)
+						{
+							if (m_Nodes[endV]->m_Conn[i]->m_ID == startV)
+								pConn2 = i;
+						}
+						
+						// remove the link
+						if (pConn1 >= 0)
+							m_Nodes[startV]->m_Conn.erase(m_Nodes[startV]->m_Conn.begin()+pConn1);
+						if (pConn2 >= 0)
+							m_Nodes[endV]->m_Conn.erase(m_Nodes[endV]->m_Conn.begin()+pConn2);
+
+						// calculate the graph attribute
+						fn_calGraphAttributes();
+					}
+					lbcounter = 0;
+				}
+				// end if
+			}
+			// end if
+		}
+		// end Remove Edge ////
+	}
+	// mouse left up
+	else if (!s_isLBtnDown && lbtnd)
+	{
+		lbtnd = false;
+	}
+	// end if
+		
+	  /////////////////
+	 // Remove Node //
+	/////////////////
+	static bool keycounter = 0;
+	if((m_DxInput->m_KeyState[DIK_DELETE] & 0x80) && (keycounter == 0))
+	{
+		keycounter = 1;
+
+		// get the node first
+		int tmpNode = -1; // -1 means none node selected
+		for (int i = (int)m_Nodes.size() - 1; i >= 0; i--)
+		{
+			float nodeR = m_nodeSprite.fn_getWidth() / 2.0f;
+			D3DXVECTOR2 tmpVec = D3DXVECTOR2(0,0);
+			// clip nodes
+			tmpVec = m_CamMan->fn_getRelPos(D3DXVECTOR2(m_Nodes[i]->m_PosX, m_Nodes[i]->m_PosY));
+
+			if (((s_MousePosAbs.x - tmpVec.x)*(s_MousePosAbs.x - tmpVec.x) +
+				(s_MousePosAbs.y - tmpVec.y)*(s_MousePosAbs.y - tmpVec.y) <= nodeR*nodeR)) // click right on the node
+			{
+				tmpNode = i;
+
+				// only one can been selected at a time, deal with overlap nodes
+				break;
+			}
+			// end if
+		}
+		// end for
+
+		// if there are node selected
+		if (tmpNode >= 0)
+		{
+			while (!m_Nodes[tmpNode]->m_Conn.empty())
+			{
+				int tmpConn = m_Nodes[tmpNode]->m_Conn.back()->m_ID;
+				int pConn1 = -1, pConn2 = -1;
+				for (unsigned int i = 0; i < m_Nodes[tmpNode]->m_Conn.size(); i++)
+				{
+					if (m_Nodes[tmpNode]->m_Conn[i]->m_ID == tmpConn)
+						pConn1 = i;
+				}
+						
+				for (unsigned int i = 0; i < m_Nodes[tmpConn]->m_Conn.size(); i++)
+				{
+					if (m_Nodes[tmpConn]->m_Conn[i]->m_ID == tmpNode)
+						pConn2 = i;
+				}
+						
+				// remove the link
+				if (pConn1 >= 0)
+					m_Nodes[tmpNode]->m_Conn.erase(m_Nodes[tmpNode]->m_Conn.begin()+pConn1);
+				if (pConn2 >= 0)
+					m_Nodes[tmpConn]->m_Conn.erase(m_Nodes[tmpConn]->m_Conn.begin()+pConn2);
+			}
+			// end while
+
+			m_Nodes.erase(m_Nodes.begin()+tmpNode);
+
+			// calculate the graph attribute
+			fn_calGraphAttributes();
+
+			fn_UpdateFrame();
+		}
+		// end if
+	}
+	else if (!(m_DxInput->m_KeyState[DIK_DELETE] & 0x80) && (keycounter != 0))
+	{
+		keycounter = 0;
+	}
+	// end Remove Node ////
 }
 
 void Li_GraphPlayer::fn_log()

@@ -26,5 +26,8 @@
     <ClInclude Include="Li_Node.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Li_Edge.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

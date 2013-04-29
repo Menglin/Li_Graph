@@ -57,11 +57,11 @@ double Li_Graph::fn_GenerateGraphASC(int expSize, double expCC, double expError,
 
 	double actError		= 0;
 	m_GraphSize			= 0;
-	m_Edges				= 0;
+	m_EdgeNum			= 0;
 	m_Triplets			= 0;
 	m_Triangles			= 0;
 	Li_Node* tmpNode	= NULL;
-	m_TotalCC			= 0.0;
+	m_Transitivity		= 0.0;
 	
 
 	// for initialize the position as Circle by default,
@@ -114,7 +114,7 @@ double Li_Graph::fn_GenerateGraphASC(int expSize, double expCC, double expError,
 
 	// now we have 3 nodes, with 2 links, linked as a line, which includes 1 triplets
 	m_GraphSize	= 3;
-	m_Edges		= 2;
+	m_EdgeNum	= 2;
 	m_Triplets	= 1;
 
 	// // 1-2. add the rest nodes and randomly link it to one of the exist node
@@ -133,7 +133,7 @@ double Li_Graph::fn_GenerateGraphASC(int expSize, double expCC, double expError,
 
 		// increase the graph size and the edges
 		m_GraphSize++;
-		m_Edges++;
+		m_EdgeNum++;
 		// increase corresponding triplets
 		m_Triplets += (m_Nodes[tmpLink]->m_Conn.size() - 1);
 
@@ -236,7 +236,7 @@ double Li_Graph::fn_GenerateGraphASC(int expSize, double expCC, double expError,
 			m_Nodes[tmpNum]->m_Conn[tmpC1]->m_LocDegree++;
 			m_Nodes[tmpNum]->m_Conn[tmpC2]->m_LocDegree++;
 
-			m_Edges++;
+			m_EdgeNum++;
 
 			// // 2-2. if the edge are added, calculate the new triplets and triangles in the new graph
 			// // // 2-2-1. count how many neighbours the two linked node have, it is the number of the new addon triplets
@@ -273,7 +273,7 @@ double Li_Graph::fn_GenerateGraphASC(int expSize, double expCC, double expError,
 			m_Triangles += tmpTriangle*3;
 			// // // 2-2-3. calculate the Total Clustering coefficient
 			// compute the total clustering coefficient
-			m_TotalCC = double(m_Triangles) / double(m_Triplets);
+			m_Transitivity = double(m_Triangles) / double(m_Triplets);
 
 			// // // // Calculate others attribute // // // //
 			// These attribute is not necessary for the graph generate, but it is much easier(less time complexity) to compute while building the graph, and may have good use in the furture
@@ -282,11 +282,11 @@ double Li_Graph::fn_GenerateGraphASC(int expSize, double expCC, double expError,
 
 		// // 2-3. calculate the errors, do not use the abs, because it may jumped over the error set
 		// however, if it already greater than the expected value, adding triangles will only make it even greater
-		actError = expCC - m_TotalCC;
+		actError = expCC - m_Transitivity;
 
 		if (displayProcess)
-			std::cout<<expSize<<", "<<m_Edges<<", "<<m_Triangles<<" / "<<m_Triplets<<" : "<<m_TotalCC<<endl;
-	} while (actError > expError && m_Edges < expSize*(expSize-1)/2); // && m_TotalCC < 1.0 && m_TotalCC >= 0);
+			std::cout<<expSize<<", "<<m_EdgeNum<<", "<<m_Triangles<<" / "<<m_Triplets<<" : "<<m_Transitivity<<endl;
+	} while (actError > expError && m_EdgeNum < expSize*(expSize-1)/2); // && m_TotalCC < 1.0 && m_TotalCC >= 0);
 
 	// // // // calculate the average degree and average clustering coefficient // // // //
 
@@ -302,11 +302,11 @@ double Li_Graph::fn_GenerateGraphASCGroup(int expSize, double expCC, double expE
 
 	double actError		= 0;
 	m_GraphSize			= 0;
-	m_Edges				= 0;
+	m_EdgeNum			= 0;
 	m_Triplets			= 0;
 	m_Triangles			= 0;
 	Li_Node* tmpNode	= NULL;
-	m_TotalCC			= 0.0;
+	m_Transitivity			= 0.0;
 	
 	int lastRecEdges	= 0;	// remember the edge number of the last time record the graph into the file
 	int recGap			= 1000;	// The gap between two record (because we record the graph by actError, some times, between the actError and expError, there may have multiple valid graphs)
@@ -361,7 +361,7 @@ double Li_Graph::fn_GenerateGraphASCGroup(int expSize, double expCC, double expE
 
 	// now we have 3 nodes, with 2 links, linked as a line, which includes 1 triplets
 	m_GraphSize	= 3;
-	m_Edges		= 2;
+	m_EdgeNum	= 2;
 	m_Triplets	= 1;
 
 	// // 1-2. add the rest nodes and randomly link it to one of the exist node
@@ -380,7 +380,7 @@ double Li_Graph::fn_GenerateGraphASCGroup(int expSize, double expCC, double expE
 
 		// increase the graph size and the edges
 		m_GraphSize++;
-		m_Edges++;
+		m_EdgeNum++;
 		// increase corresponding triplets
 		m_Triplets += (m_Nodes[tmpLink]->m_Conn.size() - 1);
 
@@ -483,7 +483,7 @@ double Li_Graph::fn_GenerateGraphASCGroup(int expSize, double expCC, double expE
 			m_Nodes[tmpNum]->m_Conn[tmpC1]->m_LocDegree++;
 			m_Nodes[tmpNum]->m_Conn[tmpC2]->m_LocDegree++;
 
-			m_Edges++;
+			m_EdgeNum++;
 
 			// // 2-2. if the edge are added, calculate the new triplets and triangles in the new graph
 			// // // 2-2-1. count how many neighbours the two linked node have, it is the number of the new addon triplets
@@ -520,7 +520,7 @@ double Li_Graph::fn_GenerateGraphASCGroup(int expSize, double expCC, double expE
 			m_Triangles += tmpTriangle*3;
 			// // // 2-2-3. calculate the Total Clustering coefficient
 			// compute the total clustering coefficient
-			m_TotalCC = double(m_Triangles) / double(m_Triplets);
+			m_Transitivity = double(m_Triangles) / double(m_Triplets);
 
 			// // // // Calculate others attribute // // // //
 			// These attribute is not necessary for the graph generate, but it is much easier(less time complexity) to compute while building the graph, and may have good use in the furture
@@ -529,29 +529,29 @@ double Li_Graph::fn_GenerateGraphASCGroup(int expSize, double expCC, double expE
 
 		// // 2-3. calculate the errors, do not use the abs, because it may jumped over the error set
 		// however, if it already greater than the expected value, adding triangles will only make it even greater
-		actError = expCC - m_TotalCC;
+		actError = expCC - m_Transitivity;
 
 		if (displayProcess)
 		{
-			if (m_Edges%1000 == 0)
-				std::cout<<expSize<<", "<<m_Edges<<", "<<m_Triangles<<" / "<<m_Triplets<<" : "<<m_TotalCC<<"\r";
+			if (m_EdgeNum%1000 == 0)
+				std::cout<<expSize<<", "<<m_EdgeNum<<", "<<m_Triangles<<" / "<<m_Triplets<<" : "<<m_Transitivity<<"\r";
 		}
 
 		double absError = abs(actError);
-		if (absError < expError && (lastRecEdges == 0 || m_Edges - lastRecEdges > recGap))
+		if (absError < expError && (lastRecEdges == 0 || m_EdgeNum - lastRecEdges > recGap))
 		{
 			char fname[32] = "newgraph";
 			char tmpName[16] = "";
-			ParseStr(tmpName, m_Edges);
+			ParseStr(tmpName, m_EdgeNum);
 			strcat_s(fname, tmpName);
 			strcat_s(fname, ".txt");
 			fn_SaveGraph(fname);
 
-			lastRecEdges = m_Edges;
+			lastRecEdges = m_EdgeNum;
 
-			std::cout<<fname<<", "<<m_Edges<<", "<<m_Triangles<<" / "<<m_Triplets<<" : "<<m_TotalCC<<endl;
+			std::cout<<fname<<", "<<m_EdgeNum<<", "<<m_Triangles<<" / "<<m_Triplets<<" : "<<m_Transitivity<<endl;
 		}
-	} while (/*actError > expError && */m_Edges < expSize*(expSize-1)/2); // && m_TotalCC < 1.0 && m_TotalCC >= 0);
+	} while (/*actError > expError && */m_EdgeNum < expSize*(expSize-1)/2); // && m_TotalCC < 1.0 && m_TotalCC >= 0);
 	// to generate a group of certain cc graph, we dont stop the loop when it reach the experror, we keep looping it,
 	// every time it is hit the experror, we output a graph, and then give it sever edges to jump out of the current error range.
 
@@ -569,7 +569,7 @@ double Li_Graph::fn_GenerateGraphDESC(int expSize, double expCC, double expError
 	// initialize it to complete graph state
 	double actError		= 0;
 	m_GraphSize			= expSize;
-	m_Edges				= (expSize-1)*expSize / 2;
+	m_EdgeNum			= (expSize-1)*expSize / 2;
 	m_Triangles			= (expSize*expSize*expSize - 3*expSize*expSize + 2*expSize)/6; // fomular to calculate how many triangles in the complete graph
 	m_Triangles			= m_Triangles*3; // The clustering coefficient is calculated by each nodes, so one triangle will be count as 3 times for 3 vertex.
 	m_Triplets			= m_Triangles;
@@ -629,11 +629,11 @@ double Li_Graph::fn_GenerateGraph(int expSize, double expCC, double expError, in
 	double actError		= 0;
 	double absError		= 0;
 	m_GraphSize			= 0;
-	m_Edges				= 0;
+	m_EdgeNum			= 0;
 	m_Triplets			= 0;
 	m_Triangles			= 0;
 	Li_Node* tmpNode	= NULL;
-	m_TotalCC			= 0.0;
+	m_Transitivity		= 0.0;
 	
 	int totalEdges = expDegree * expSize / 2;
 
@@ -704,7 +704,7 @@ double Li_Graph::fn_GenerateGraph(int expSize, double expCC, double expError, in
 		m_Nodes[tmpLink]->m_LocDegree++;
 
 		// increase the edges
-		m_Edges++;
+		m_EdgeNum++;
 		// increase corresponding triplets
 		m_Triplets += (m_Nodes[i]->m_Conn.size() - 1);
 		m_Triplets += (m_Nodes[tmpLink]->m_Conn.size() - 1);
@@ -769,7 +769,7 @@ double Li_Graph::fn_GenerateGraph(int expSize, double expCC, double expError, in
 
 	// now we have 3 nodes, with 2 links, linked as a line, which includes 1 triplets
 	m_GraphSize	= 3;
-	m_Edges		= 2;
+	m_EdgeNum	= 2;
 	m_Triplets	= 1;
 
 	// // 1-2.1 add the rest nodes and randomly link it to one of the exist node
@@ -788,7 +788,7 @@ double Li_Graph::fn_GenerateGraph(int expSize, double expCC, double expError, in
 
 		// increase the graph size and the edges
 		m_GraphSize++;
-		m_Edges++;
+		m_EdgeNum++;
 		// increase corresponding triplets
 		m_Triplets += (m_Nodes[tmpLink]->m_Conn.size() - 1);
 
@@ -803,7 +803,7 @@ double Li_Graph::fn_GenerateGraph(int expSize, double expCC, double expError, in
 	// after Step 1.2.1 the local clustering coefficient of each node in the graph should be all 0
 	
 	// // // Step 1.2.2. add the rest Edges
-	for (int i = m_Edges; i < totalEdges; i++)
+	for (int i = m_EdgeNum; i < totalEdges; i++)
 	{
 		// randomly take the first entrance
 		int tmpE1 = rand()%m_GraphSize;
@@ -862,7 +862,7 @@ double Li_Graph::fn_GenerateGraph(int expSize, double expCC, double expError, in
 		m_Nodes[tmpE1]->m_Conn.push_back(m_Nodes[tmpE2]);
 		m_Nodes[tmpE2]->m_Conn.push_back(m_Nodes[tmpE1]);
 		// increase the edges
-		m_Edges++;
+		m_EdgeNum++;
 		// increase corresponding triplets
 		m_Triplets += (m_Nodes[tmpE1]->m_Conn.size() - 1);
 		m_Triplets += (m_Nodes[tmpE2]->m_Conn.size() - 1);
@@ -900,9 +900,9 @@ double Li_Graph::fn_GenerateGraph(int expSize, double expCC, double expError, in
 	
 	// calculate the Total Clustering coefficient
 	// compute the total clustering coefficient and Error
-	m_TotalCC = double(m_Triangles) / double(m_Triplets);
-	actError = expCC - m_TotalCC;
-	absError = abs(actError);
+	m_Transitivity	= double(m_Triangles) / double(m_Triplets);
+	actError		= expCC - m_Transitivity;
+	absError		= abs(actError);
 
 	// setp 2. now looking for the clustering coefficient
 
@@ -1135,9 +1135,9 @@ double Li_Graph::fn_GenerateGraph(int expSize, double expCC, double expError, in
 		
 		// calculate the Total Clustering coefficient
 		// compute the total clustering coefficient and Error
-		m_TotalCC = double(m_Triangles) / double(m_Triplets);
-		actError = expCC - m_TotalCC;
-		absError = abs(actError);
+		m_Transitivity	= double(m_Triangles) / double(m_Triplets);
+		actError		= expCC - m_Transitivity;
+		absError		= abs(actError);
 
 		// 2. add a new edge
 		// reset the temp attributes
@@ -1306,16 +1306,16 @@ double Li_Graph::fn_GenerateGraph(int expSize, double expCC, double expError, in
 
 		// calculate the Total Clustering coefficient
 		// compute the total clustering coefficient and Error
-		m_TotalCC = double(m_Triangles) / double(m_Triplets);
-		actError = expCC - m_TotalCC;
-		absError = abs(actError);
+		m_Transitivity	= double(m_Triangles) / double(m_Triplets);
+		actError		= expCC - m_Transitivity;
+		absError		= abs(actError);
 		
 		if (displayProcess)
-			std::cout<<expSize<<", "<<m_Edges<<", "<<m_Triangles<<" / "<<m_Triplets<<" : "<<m_TotalCC<<endl;
+			std::cout<<expSize<<", "<<m_EdgeNum<<", "<<m_Triangles<<" / "<<m_Triplets<<" : "<<m_Transitivity<<endl;
 	}
 	// end while (absError > expError)
 
-	// This approach is too slow for generate large graph, I'm looking for another one
+	// This approach is too slow for generate large graph, use the one above
 	/*
 	while (absError > expError)
 	{
@@ -1550,7 +1550,7 @@ double Li_Graph::fn_GenerateGraph(int expSize, double expCC, double expError, in
 		absError = abs(actError);
 		
 		if (displayProcess)
-			std::cout<<expSize<<", "<<m_Edges<<", "<<m_Triangles<<" / "<<m_Triplets<<" : "<<m_TotalCC<<endl;
+			std::cout<<expSize<<", "<<m_EdgeNum<<", "<<m_Triangles<<" / "<<m_Triplets<<" : "<<m_TotalCC<<endl;
 	}
 	// end while
 	*/
@@ -1559,6 +1559,7 @@ double Li_Graph::fn_GenerateGraph(int expSize, double expCC, double expError, in
 }
 
 // generate graph genetic
+/*
 void fn_GenerateGraphGA(int expSize)
 {
 	// Genetic parameters
@@ -1572,6 +1573,7 @@ void fn_GenerateGraphGA(int expSize)
 
 	delete adjMatrix;
 }
+*/
 
 // calculate graph attributes
 void Li_Graph::fn_calGraphAttributes()
@@ -1580,13 +1582,13 @@ void Li_Graph::fn_calGraphAttributes()
 	double	sumLocCC	= 0;	// used to calculate the average graph Clustering coefficient
 	// initialize the graph attribute calculate sensitive data for the entire graph
 	m_GraphSize	= (int)m_Nodes.size();
-	m_Edges		= 0;
-	m_AvgDegree	= 0;
-	m_AvgCC		= 0.0;
-	m_TotalCC	= 0.0;
+	m_EdgeNum		= 0;
+	m_AvgDegree		= 0;
+	m_AvgCC			= 0.0;
+	m_Transitivity	= 0.0;
 
-	m_Triplets	= 0;
-	m_Triangles	= 0;
+	m_Triplets		= 0;
+	m_Triangles		= 0;
 
 	if (!m_Nodes.empty())
 	{
@@ -1597,6 +1599,7 @@ void Li_Graph::fn_calGraphAttributes()
 			m_Nodes[i]->m_LocDegree		= m_Nodes[i]->m_Conn.size();
 			m_Nodes[i]->m_LocCC			= 0.0;
 			m_Nodes[i]->m_SubGraphConn	= 0;
+			m_Nodes[i]->m_ID			= i;
 
 			// 2. see if this guy could be a top node of triangle or triplets (if its has more than 2 connection)
 			if (m_Nodes[i]->m_Conn.size() >= 2)
@@ -1645,13 +1648,14 @@ void Li_Graph::fn_calGraphAttributes()
 		// 3. after traversd the nodes in the graph
 		// 3.1. get the number of edges
 		// the number of edges is the sumDegree/2
-		m_Edges		= sumDegree / 2;
+		m_EdgeNum	= sumDegree / 2;
 		// 3.2. get the average degree
 		m_AvgDegree	= (double)sumDegree / m_GraphSize;
 		// 3.3. get the average CC
 		m_AvgCC		= sumLocCC / m_GraphSize;
 		// 3.4. get the total CC
-		m_TotalCC	= (double)m_Triangles / m_Triplets;
+		if (m_Triplets != 0)
+			m_Transitivity = (double)m_Triangles / m_Triplets;
 	}
 }
 
@@ -1768,6 +1772,8 @@ bool Li_Graph::fn_LoadGraph(char* filename)
 			// get the connection destination
 			fin >>connNode;
 			m_Nodes[curNode]->m_Conn.push_back(m_Nodes[connNode]);
+			//Li_Edge *tmpEdge = new Li_Edge(curNode, connNode);
+			//m_Edges.push_back(tmpEdge);
 		}
 		// looking for the line end character ';'
 		do

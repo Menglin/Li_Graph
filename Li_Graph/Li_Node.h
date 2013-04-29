@@ -50,6 +50,7 @@ public:
 
 		// initialize the total payoff
 		m_TotalPayoff = 0.0;
+		m_AveragePayoff = 0.0;
 	}
 
 	// member variables ////

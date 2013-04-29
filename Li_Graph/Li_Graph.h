@@ -2,6 +2,7 @@
 #define LI_GRAPH_H
 
 #include "Li_Node.h"
+#include "Li_Edge.h"
 
 #define LESS_THAN_THREE_NODE -9999 // an Error feed back of the function return value
 
@@ -32,14 +33,14 @@ public:
 
 	virtual void fn_InitGraph()
 	{
-		m_GraphSize	= 0;
-		m_Edges		= 0;
-		m_AvgDegree	= 0;
-		m_AvgCC		= 0.0;
-		m_TotalCC	= 0.0;
+		m_GraphSize		= 0;
+		m_EdgeNum		= 0;
+		m_AvgDegree		= 0;
+		m_AvgCC			= 0.0;
+		m_Transitivity	= 0.0;
 
-		m_Triplets	= 0;
-		m_Triangles	= 0;
+		m_Triplets		= 0;
+		m_Triangles		= 0;
 	}
 
 	virtual void fn_DestroyGraph()
@@ -56,14 +57,22 @@ public:
 		m_Nodes.clear();
 		*/
 
-		m_GraphSize	= 0;
-		m_Edges		= 0;
-		m_AvgDegree	= 0;
-		m_AvgCC		= 0.0;
-		m_TotalCC	= 0.0;
+		/*
+		while (!m_Edges.empty())
+		{
+			delete m_Edges.back();
+			m_Edges.pop_back();
+		}
+		*/
 
-		m_Triplets	= 0;
-		m_Triangles	= 0;
+		m_GraphSize		= 0;
+		m_EdgeNum		= 0;
+		m_AvgDegree		= 0;
+		m_AvgCC			= 0.0;
+		m_Transitivity	= 0.0;
+
+		m_Triplets		= 0;
+		m_Triangles		= 0;
 	}
 
 	virtual void fn_ReInitGraph()
@@ -91,7 +100,7 @@ public:
 	double fn_GenerateGraph(int expSize, double expCC, double expError, int expDegree, bool displayProcess = false);
 	
 	// generate graph genetic
-	void fn_GenerateGraphGA(int expSize);
+	//void fn_GenerateGraphGA(int expSize);
 
 	// calculate graph attributes
 	void fn_calGraphAttributes();
@@ -107,12 +116,13 @@ public:
 
 //protected:
 	vector<Li_Node*> m_Nodes;
+	//vector<Li_Edge*> m_Edges; // for undirected graph, this is not really helpful, only adding redanduncy
 
 	int		m_GraphSize;	// the number of nodes in the graph
-	int		m_Edges;		// the total edges in the graph
+	int		m_EdgeNum;		// the total edges in the graph
 	double	m_AvgDegree;	// the average degree of the graph
 	double	m_AvgCC;		// the average cluster coefficient of the graph
-	double	m_TotalCC;		// the Total cluster coefficient of the graph
+	double	m_Transitivity;	// the Total cluster coefficient of the graph
 
 	// to reduce the time of calculate the total clustering coefficient
 	int		m_Triplets;		// the number of triplets in the graph

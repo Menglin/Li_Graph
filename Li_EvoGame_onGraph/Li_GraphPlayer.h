@@ -27,7 +27,9 @@ public:
 	{
 		m_state = PAUSE;
 		m_displayGraph = true;
-		m_logGen = true;
+		m_logGen = false;
+		m_GenNum = 0;
+		m_CR = 0;
 
 		// the log file will be opend if the file name has been assigned
 		/*
@@ -64,6 +66,8 @@ public:
 	virtual bool fn_keyListener();
 	virtual bool fn_mouseListener();
 
+	void fn_EditGraph();
+
 	void fn_drawUI();
 
 	void fn_log();
@@ -97,7 +101,9 @@ protected :
 	Li_btnSprite m_btnLog;
 	
 	Li_lstBtnSprite m_lstBtnGraphLayout;
-
+	
+	Li_btnSprite m_btnNew;
+	Li_btnSprite m_btnOpen;
 	Li_btnSprite m_btnSave;
 	Li_btnSprite m_btnSaveMatrix;
 
