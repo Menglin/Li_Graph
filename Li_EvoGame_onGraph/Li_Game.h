@@ -74,28 +74,28 @@ public:
 
 	virtual void fn_Play(Li_Node *a, Li_Node *b, bool isDoubleDir)
 	{
-		// 0: Cooperate;
-		// 1: Defecte
+		// C / 0: Cooperate;
+		// D / 1: Defecte
 
-		if (a->m_Agent->m_Strategy == 0 && b->m_Agent->m_Strategy == 0)
+		if (a->m_Agent->m_Strategy == C && b->m_Agent->m_Strategy == C)
 		{
 			a->m_Agent->m_TotalPayoff += R;
 			if (isDoubleDir)
 				b->m_Agent->m_TotalPayoff += R;
 		}
-		else if (a->m_Agent->m_Strategy == 0 && b->m_Agent->m_Strategy == 1)
+		else if (a->m_Agent->m_Strategy == C && b->m_Agent->m_Strategy == D)
 		{
 			a->m_Agent->m_TotalPayoff += S;
 			if (isDoubleDir)
 				b->m_Agent->m_TotalPayoff += T;
 		}
-		else if (a->m_Agent->m_Strategy == 1 && b->m_Agent->m_Strategy == 0)
+		else if (a->m_Agent->m_Strategy == D && b->m_Agent->m_Strategy == C)
 		{
 			a->m_Agent->m_TotalPayoff += T;
 			if (isDoubleDir)
 				b->m_Agent->m_TotalPayoff += S;
 		}
-		else if (a->m_Agent->m_Strategy == 1 && b->m_Agent->m_Strategy == 1)
+		else if (a->m_Agent->m_Strategy == D && b->m_Agent->m_Strategy == D)
 		{
 			a->m_Agent->m_TotalPayoff += P;
 			if (isDoubleDir)

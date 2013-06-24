@@ -21,8 +21,8 @@ void Li_GraphPlayer::fn_DrawGraph()
 {
 	int num = m_Nodes.size();
 	float nodeR			= 0.0f;
-	D3DXVECTOR2 tmpVec	= D3DXVECTOR2(0,0);
-	D3DXVECTOR2 tmpVec2	= D3DXVECTOR2(0,0);
+	D3DXVECTOR2 tmpVec	= D3DXVECTOR2(0,0);	// the rel pos for node i
+	D3DXVECTOR2 tmpVec2	= D3DXVECTOR2(0,0); // the rel pos for note i 's connection node i->j
 	int drawTip			= -1;
 
 	// draw nodes and edges
@@ -34,101 +34,123 @@ void Li_GraphPlayer::fn_DrawGraph()
 		// get texture radius
 		nodeR = m_nodeSprite.fn_getWidth() / 2.0f;
 
-		// node is grabed
-		if (m_Nodes[i]->m_isSelected)
+		//// Draw Nodes ////
+
+		// only draw nodes if its in the current camera view
+		if (tmpVec.x > -nodeR && tmpVec.y > -nodeR && tmpVec.x < m_WinWidth+nodeR && tmpVec.y < m_WinHeight+nodeR)
 		{
-			// if single select, the node simply follow the mouse position
-			if (s_multiSelect == 0)
+			// node is grabed
+			if (m_Nodes[i]->m_isSelected)
 			{
-				// test if the mouse actually move outside the node
-				// just for not mass the graph, the graph only move when the mouse move
-				//D3DXVECTOR2 newPos = m_CamMan->fn_getAbsPos(s_MousePosAbs);
-
-				//m_Nodes[i]->m_PosX = newPos.x;
-				//m_Nodes[i]->m_PosY = newPos.y;
-				
-				if (s_isLBtnDown)
+				// if single select, the node simply follow the mouse position
+				if (s_multiSelect == 0)
 				{
-					m_Nodes[i]->m_PosX += (s_curx - s_clkx) / m_CamMan->m_CameraScale;
-					m_Nodes[i]->m_PosY += (s_cury - s_clky) / m_CamMan->m_CameraScale;
-				
-					s_clkx = s_curx;
-					s_clky = s_cury;
-				}
+					// test if the mouse actually move outside the node
+					// just for not mass the graph, the graph only move when the mouse move
+					//D3DXVECTOR2 newPos = m_CamMan->fn_getAbsPos(s_MousePosAbs);
 
-				// set draw Tip
-				drawTip = i;
-			}
-			// if multi select, draw a circle on it to show those nodes are being selected
-			else
-			{
-				tmpVec2 = m_CamMan->fn_getRelPos(D3DXVECTOR2(m_Nodes[i]->m_PosX, m_Nodes[i]->m_PosY));
-				fn_DrawCircle(tmpVec2.x, tmpVec2.y, nodeR+1, 2.0f, 175, 225,0);
+					//m_Nodes[i]->m_PosX = newPos.x;
+					//m_Nodes[i]->m_PosY = newPos.y;
 				
-				// keep the mouse in the mouse lisenter, since it not make the program too slow,
-				// but could get rid of the delay of the draw connection on the graphic
-				// (because the move is done before draw connection, not during that)
-				/*
-				// move multiply nodes
-				if (s_multiSelect == 2)
-				{
 					if (s_isLBtnDown)
 					{
 						m_Nodes[i]->m_PosX += (s_curx - s_clkx) / m_CamMan->m_CameraScale;
 						m_Nodes[i]->m_PosY += (s_cury - s_clky) / m_CamMan->m_CameraScale;
+				
+						s_clkx = s_curx;
+						s_clky = s_cury;
 					}
+
+					// set draw Tip
+					drawTip = i;
 				}
-				*/
+				// if multi select, draw a circle on it to show those nodes are being selected
+				else
+				{
+					tmpVec2 = m_CamMan->fn_getRelPos(D3DXVECTOR2(m_Nodes[i]->m_PosX, m_Nodes[i]->m_PosY));
+					fn_DrawCircle(tmpVec2.x, tmpVec2.y, nodeR+1, 2.0f, 175, 225,0);
+				
+					// keep the mouse in the mouse lisenter, since it not make the program too slow,
+					// but could get rid of the delay of the draw connection on the graphic
+					// (because the move is done before draw connection, not during that)
+					/*
+					// move multiply nodes
+					if (s_multiSelect == 2)
+					{
+						if (s_isLBtnDown)
+						{
+							m_Nodes[i]->m_PosX += (s_curx - s_clkx) / m_CamMan->m_CameraScale;
+							m_Nodes[i]->m_PosY += (s_cury - s_clky) / m_CamMan->m_CameraScale;
+						}
+					}
+					*/
+				}
+				// end if-else
 			}
+			// if mouse on it
+			else if ((s_MousePosAbs.x - tmpVec.x)*(s_MousePosAbs.x - tmpVec.x) +
+				(s_MousePosAbs.y - tmpVec.y)*(s_MousePosAbs.y - tmpVec.y) <= nodeR*nodeR
+				&& drawTip < i)
+			{
+				// set draw Tip
+				drawTip = i;
+			}
+
+			// draw nodes depends on it's strategy
+			if (m_Nodes[i]->m_Agent->m_Strategy == 0) // C, Blue
+				m_nodeSprite.fn_drawSprite(m_dxSpriteInterface,
+							D3DXVECTOR3(tmpVec.x - m_nodeSprite.fn_getWidth()/2, tmpVec.y - m_nodeSprite.fn_getHeight()/2, 0),
+							D3DXCOLOR(0.25f, 0.5f, 1.0f, 1));
+			else if (m_Nodes[i]->m_Agent->m_Strategy == 1) // D, Red
+				m_nodeSprite.fn_drawSprite(m_dxSpriteInterface,
+							D3DXVECTOR3(tmpVec.x - m_nodeSprite.fn_getWidth()/2, tmpVec.y - m_nodeSprite.fn_getHeight()/2, 0),
+							D3DXCOLOR(1, 0.25f, 0.25f, 1));
 			// end if-else
 		}
-		// if mouse on it
-		else if ((s_MousePosAbs.x - tmpVec.x)*(s_MousePosAbs.x - tmpVec.x) +
-			(s_MousePosAbs.y - tmpVec.y)*(s_MousePosAbs.y - tmpVec.y) <= nodeR*nodeR
-			&& drawTip < i)
-		{
-			// set draw Tip
-			drawTip = i;
-		}
+		// end if
 
-		// draw nodes depends on it's strategy
-		if (m_Nodes[i]->m_Agent->m_Strategy == 0) // C, Blue
-			m_nodeSprite.fn_drawSprite(m_dxSpriteInterface,
-						D3DXVECTOR3(tmpVec.x - m_nodeSprite.fn_getWidth()/2, tmpVec.y - m_nodeSprite.fn_getHeight()/2, 0),
-						D3DXCOLOR(0.25f, 0.5f, 1.0f, 1));
-		else if (m_Nodes[i]->m_Agent->m_Strategy == 1) // D, Red
-			m_nodeSprite.fn_drawSprite(m_dxSpriteInterface,
-						D3DXVECTOR3(tmpVec.x - m_nodeSprite.fn_getWidth()/2, tmpVec.y - m_nodeSprite.fn_getHeight()/2, 0),
-						D3DXCOLOR(1, 0.25f, 0.25f, 1));
-		// end if-else
 
-		// if the size is too big, ingore the connection.
-		if (m_Nodes.size() <= 1000)
+		//// Draw Connections ////
+
+		// only draw the connections if the size is not too big.
+		if (m_Nodes.size() <= 5000)
 		{
 			// draw connections
 			for (unsigned int j = 0; j < m_Nodes[i]->m_Conn.size(); j++)
 			{
 				tmpVec2 = m_CamMan->fn_getRelPos(D3DXVECTOR2(m_Nodes[i]->m_Conn[j]->m_PosX, m_Nodes[i]->m_Conn[j]->m_PosY));
 
-				if (m_Nodes[i]->m_isSelected)
+				// calculate the length of the line, if it too short, dont draw it
+				float tmplength = sqrt((tmpVec.x - tmpVec2.x)*(tmpVec.x - tmpVec2.x) + (tmpVec.y - tmpVec2.y)*(tmpVec.y - tmpVec2.y));
+				
+				// also, dont draw the line if both of its node are out side of the camera view
+				if (tmplength >= nodeR * 2)
+					// && ((tmpVec.x > -nodeR && tmpVec.y > -nodeR && tmpVec.x < m_WinWidth+nodeR && tmpVec.y < m_WinHeight+nodeR) ||
+					//(tmpVec2.x > -nodeR && tmpVec2.y > -nodeR && tmpVec2.x < m_WinWidth+nodeR && tmpVec2.y < m_WinHeight+nodeR)))
 				{
-					fn_DrawLine(tmpVec.x, tmpVec.y, tmpVec2.x, tmpVec2.y, 2, 0, 0, 255);
-				}
-				else if (m_Nodes[i]->m_Conn[j]->m_ID > m_Nodes[i]->m_ID)
-				{
-					// if the edge is linked to the selected node, print it green, else red
-					if ((s_MousePosAbs.x - tmpVec.x)*(s_MousePosAbs.x - tmpVec.x) +
-								(s_MousePosAbs.y - tmpVec.y)*(s_MousePosAbs.y - tmpVec.y) <= nodeR*nodeR ||
-						(s_MousePosAbs.x - tmpVec2.x)*(s_MousePosAbs.x - tmpVec2.x) +
-								(s_MousePosAbs.y - tmpVec2.y)*(s_MousePosAbs.y - tmpVec2.y) <= nodeR*nodeR)
+					// if the node i is selected, draw all of the lines to its connection nodes blue
+					if (m_Nodes[i]->m_isSelected)
 					{
-						fn_DrawLine(tmpVec.x, tmpVec.y, tmpVec2.x, tmpVec2.y, 2, 0,255,0);
+						fn_DrawLine(tmpVec.x, tmpVec.y, tmpVec2.x, tmpVec2.y, 2, 0, 0, 255);
 					}
-					else
-						fn_DrawLine(tmpVec.x, tmpVec.y, tmpVec2.x, tmpVec2.y, 2, 255);
-					// end if
+					else if (m_Nodes[i]->m_Conn[j]->m_ID > m_Nodes[i]->m_ID)
+					{
+						// if node i is not selected
+						// print it red by default, if the mouse on the node, print it green
+						if ((s_MousePosAbs.x - tmpVec.x)*(s_MousePosAbs.x - tmpVec.x) +
+									(s_MousePosAbs.y - tmpVec.y)*(s_MousePosAbs.y - tmpVec.y) <= nodeR*nodeR ||
+							(s_MousePosAbs.x - tmpVec2.x)*(s_MousePosAbs.x - tmpVec2.x) +
+									(s_MousePosAbs.y - tmpVec2.y)*(s_MousePosAbs.y - tmpVec2.y) <= nodeR*nodeR)
+						{
+							fn_DrawLine(tmpVec.x, tmpVec.y, tmpVec2.x, tmpVec2.y, 2, 0,255,0);
+						}
+						else
+							fn_DrawLine(tmpVec.x, tmpVec.y, tmpVec2.x, tmpVec2.y, 2, 255);
+						// end if
+					}
+					// end if (m_Nodes[i]->m_isSelected)
 				}
-				// end if
+				// end if (tmplength >= 100)	
 			}
 			// end for j
 		}

@@ -51,7 +51,7 @@ void Li_Draw::fn_DrawLines(D3DXVECTOR2* points, DWORD vc, float width, D3DCOLOR 
 
 void Li_Draw::fn_DrawLine(float x1, float y1, float x2, float y2, float lineWidth, int r, int g, int b, int a)
 {
-	// draw circle if a part of the line is in the view port
+	// draw line if a part of the line is in the view port
 	if (((x1 > 0 && y1 > 0) || (x2 > 0 && y2 > 0)) &&
 		((x1 < m_WndSize.x && y1 < m_WndSize.y) || (x2 < m_WndSize.x && y2 < m_WndSize.y)))
 	{
@@ -74,7 +74,7 @@ void Li_Draw::fn_DrawLine(float x1, float y1, float x2, float y2, float lineWidt
 
 void Li_Draw::fn_DrawRectangle(float x, float y, float w, float h, float lineWidth, int r, int g, int b, int a)
 {
-	// draw circle if a part of the rectangle is in the view port
+	// draw rectangle if a part of the rectangle is in the view port
 	if ((x+w > 0 && y+h > 0) &&
 		(x < m_WndSize.x && y < m_WndSize.y))
 	{
@@ -103,7 +103,7 @@ void Li_Draw::fn_DrawRectangle(float x, float y, float w, float h, float lineWid
 
 void Li_Draw::fn_FillBox(float x, float y, float w, float h, int r, int g, int b, int a)
 {
-	// draw circle if a part of the box is in the view port
+	// draw box if a part of the box is in the view port
 	if ((x+w > 0 && y+h > 0) &&
 		(x < m_WndSize.x && y-h < m_WndSize.y))
 	{

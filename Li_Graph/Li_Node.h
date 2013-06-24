@@ -80,6 +80,8 @@ public:
 		m_PosX			= 0.0;
 		m_PosY			= 0.0;
 		m_isSelected	= false;
+
+		m_weight		= 1;
 	}
 
 	~Li_Node()
@@ -128,6 +130,8 @@ public:
 	bool	m_isSelected;
 
 	bool	m_isVisited;		// used to do the travel
+
+	int		m_weight;			// the weight of the node
 };
 
 #endif
