@@ -38,6 +38,8 @@ public:
 				WNDPROC WndProc,
 				int nCmdShow);
 
+	long long milliseconds_now();
+
 	// Globals ////
 	int		WINDOW_WIDTH;
 	int		WINDOW_HEIGHT;

@@ -1,4 +1,5 @@
 #include "Li_UTI_FrameWork.h"
+#include <time.h>
 
 // static members
 int Li_FW::m_WinWidth;
@@ -239,6 +240,13 @@ HRESULT Li_FW::fn_MsgLoop()
 	MSG msg; // generic message
 	ZeroMemory(&msg, sizeof(MSG));
 
+	m_lastTime = m_Win->milliseconds_now();
+	m_currTime = m_lastTime;
+	time_t lastSec = time(NULL);
+	time_t currSec = lastSec;
+	int fps = 0;
+	m_FPS = 0;
+
 	// test if this is a quit
 	while (msg.message != WM_QUIT)
 	{
@@ -272,10 +280,31 @@ HRESULT Li_FW::fn_MsgLoop()
 				fn_ResetD3DDevice();
 
 			// render graphics
-			fn_RenderFrame();
+			// Time control
+			if (m_currTime - m_lastTime >= m_Win->iTimeDelta)
+			{
+				fps++;
+				fn_RenderFrame();
+				m_lastTime = m_currTime;
+			}
+
+			m_currTime = m_Win->milliseconds_now();
+
+			// FPS control
+			if (currSec - lastSec >= 1)
+			{
+				if (m_FPS != fps)
+					fn_UpdateFrame();
+				m_FPS = fps;
+				fps = 0;
+				lastSec = currSec;
+				//fn_UpdateFrame();
+			}
+
+			currSec = time(NULL);
 
 			// Sleep, 1000 = 1 Sec.
-			Sleep(m_Win->iTimeDelta);
+			//Sleep(m_Win->iTimeDelta);
 		}
 		// End Message Pump ////
 	}

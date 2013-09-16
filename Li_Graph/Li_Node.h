@@ -79,6 +79,8 @@ public:
 
 		m_PosX			= 0.0;
 		m_PosY			= 0.0;
+		m_DestX			= m_PosX;
+		m_DestY			= m_PosY;
 		m_isSelected	= false;
 
 		m_weight		= 1;
@@ -98,7 +100,7 @@ public:
 		m_SubGraphConn	= 0;
 	}
 
-	bool isconnectedto(Li_Node* node)
+	bool fn_isConnTo(Li_Node* node)
 	{
 		bool isconn = false;
 		int tsize = m_Conn.size();
@@ -114,6 +116,56 @@ public:
 		return isconn;
 	}
 
+	// 测试两个顶点是否共享所有的邻居，如果邻居不同，返回0
+	// 所有邻居相同但两点未相连，返回1
+	// 所有邻居相同且两点相连，返回2
+	int fn_neighbourSharingTo(Li_Node* node)
+	{
+		bool isConn = false;
+		bool isNeighbourSharing = true;
+		// 如果连度都不相同，两点一定不会有同样的邻居
+		if (m_LocDegree != node->m_LocDegree)
+		{
+			return 0;
+		}
+		
+		// 首先看看两点是否直接连接
+		if (fn_isConnTo(node))
+			isConn = true;
+
+		// 同度的情况下，需要一个一个的对比邻居
+		for (int i = 0; i < m_LocDegree; i++)
+		{
+			bool inset = false;
+			for (int j = 0; j < node->m_LocDegree; j++)
+			{
+				if ((m_Conn[i] == node->m_Conn[j]) || (m_Conn[i] ==node))
+				{
+					inset = true;
+				}
+			}
+			// end for j
+
+			if (!inset)
+			{
+				isNeighbourSharing = false;
+				return 0;
+			}
+		}
+		// end for i
+
+		if (isNeighbourSharing)
+		{
+			if (isConn)
+				return 2;
+			else
+				return 1;  
+		}
+		else
+			return 0;
+		// end if
+	}
+
 	// member variables ////
 	Li_Agent* m_Agent;
 
@@ -127,6 +179,8 @@ public:
 
 	float	m_PosX;
 	float	m_PosY;
+	float	m_DestX;
+	float	m_DestY;
 	bool	m_isSelected;
 
 	bool	m_isVisited;		// used to do the travel

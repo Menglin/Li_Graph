@@ -1823,8 +1823,10 @@ void Li_Graph::fn_InitNodePos(GraphLayout layout)
 
 			for (int i = 0; i < num; i++)
 			{
-				m_Nodes[i]->m_PosX = centerx + radius *(float)cos(2 * PI * i / numPerC);
-				m_Nodes[i]->m_PosY = centery + radius *(float)sin(2 * PI * i / numPerC);
+				//m_Nodes[i]->m_PosX = centerx + radius *(float)cos(2 * PI * i / numPerC);
+				//m_Nodes[i]->m_PosY = centery + radius *(float)sin(2 * PI * i / numPerC);
+				m_Nodes[i]->m_DestX = centerx + radius *(float)cos(2 * PI * i / numPerC);
+				m_Nodes[i]->m_DestY = centery + radius *(float)sin(2 * PI * i / numPerC);
 				if (screw)
 					radius++;
 				// end if
@@ -1839,8 +1841,10 @@ void Li_Graph::fn_InitNodePos(GraphLayout layout)
 			int dim = (int)sqrt((double)num);
 			for (int i = 0; i < num; i++)
 			{
-				m_Nodes[i]->m_PosX = 100.0f + i % dim * 50;
-				m_Nodes[i]->m_PosY = 100.0f + i / dim * 50;
+				//m_Nodes[i]->m_PosX = 100.0f + i % dim * 50;
+				//m_Nodes[i]->m_PosY = 100.0f + i / dim * 50;
+				m_Nodes[i]->m_DestX = 100.0f + i % dim * 50;
+				m_Nodes[i]->m_DestY = 100.0f + i / dim * 50;
 			}
 		}
 		// end Square layout

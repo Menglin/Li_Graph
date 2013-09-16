@@ -31,6 +31,8 @@ public:
 		m_GenNum = 0;
 		m_CR = 0;
 
+		m_inAnimation = false;
+
 		// the log file will be opend if the file name has been assigned
 		/*
 		m_fout.open("log_cr.txt", ios::app);
@@ -109,6 +111,7 @@ protected :
 
 	bool m_displayGraph;
 	bool m_logGen;
+	bool m_inAnimation;
 
 	ofstream m_fout;
 };

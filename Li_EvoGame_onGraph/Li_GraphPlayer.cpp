@@ -244,6 +244,8 @@ void Li_GraphPlayer::fn_drawUI()
 		strcat_s(tmpStr, ParseStr(m_CR, 6));
 		m_font->DrawText(m_dxSpriteInterface,  tmpStr, -1, NULL, DT_LEFT, D3DCOLOR(0xFF000000));
 	}
+
+	/*
 	// user manu
 	rct.left = m_WinWidth / 2 - 310;
 	rct.right = m_WinWidth / 2 + 310;
@@ -257,6 +259,18 @@ void Li_GraphPlayer::fn_drawUI()
 	strcat_s(tmpStr, "Hold 'Shift':new node, Hold 'Ctrl':new edge, Hold 'Alt':remove edge \n");
 	strcat_s(tmpStr, "Left Btn: move the Node. Right Btn: move the scene. Mouse wheel: Scale. \n");
 	strcat_s(tmpStr, "Double Click(or C/D): change strategy to C or D.");
+	strcat_s(tmpStr, " FPS : ");
+	strcat_s(tmpStr, ParseStr(m_FPS, 6));
+	m_font->DrawText(m_dxSpriteInterface,  tmpStr, -1, NULL, DT_CENTER, D3DCOLOR(0xFFFF0F0F));
+	*/
+	rct.left = m_WinWidth - 150;
+	rct.right = m_WinWidth - 5;
+	rct.top = m_WinHeight - 50;
+	rct.bottom = m_WinHeight - 5;
+	// draw m_textBoxSprite
+	m_textBoxSprite.fn_drawAsBoarder(m_dxSpriteInterface, rct);
+	strcpy_s(tmpStr, " FPS : ");
+	strcat_s(tmpStr, ParseStr(m_FPS, 2));
 	m_font->DrawText(m_dxSpriteInterface,  tmpStr, -1, NULL, DT_CENTER, D3DCOLOR(0xFFFF0F0F));
 
 	// draw button
@@ -362,6 +376,86 @@ HRESULT Li_GraphPlayer::fn_ctrl_releaseD3D()
 
 void Li_GraphPlayer::fn_ctrl_mainLogic() // in fn_MsgLoop()
 {
+	int num = m_Nodes.size();
+
+	// moving the nodes with animation
+	// Time control
+	// currenttime and lasttime is controled while rendering frame
+	// here, we only use the value of them, animated as the same time as rendering in each frame
+	// 在渲染框架中控制时间的变化，获取，更改上次变动时间及当前时间，这里只读数，以便在每一帧的渲染中播放一帧动画
+	if (m_currTime - m_lastTime >= m_Win->iTimeDelta)
+	{
+		if (m_inAnimation)
+		{
+			bool isallmoved = true;
+			for (int i = 0; i < num; i++)
+			{
+				float diffx = m_Nodes[i]->m_DestX - m_Nodes[i]->m_PosX;
+				float diffy = m_Nodes[i]->m_DestY - m_Nodes[i]->m_PosY;
+				float diff = sqrt(diffx*diffx + diffy*diffy);
+				float tmpSpd = 10;
+				float movex, movey;
+				if (diffx != 0)
+				{
+					movex = tmpSpd * diffx/diff;
+					if (diffx > 0)
+					{
+						if (diffx >= movex)
+							m_Nodes[i]->m_PosX += movex;
+						else
+							m_Nodes[i]->m_PosX += diffx;
+					}
+					else if (diffx < 0)
+					{
+						if (diffx <= movex)
+							m_Nodes[i]->m_PosX += movex;
+						else
+							m_Nodes[i]->m_PosX += diffx;
+					}
+				}
+				// end if x
+				if (diffy != 0)
+				{
+					movey = tmpSpd * diffy/diff;
+					if (diffy > 0)
+					{
+						if (diffy >= movey)
+							m_Nodes[i]->m_PosY += movey;
+						else
+							m_Nodes[i]->m_PosY += diffy;
+					}
+					else if (diffy < 0)
+					{
+						if (diffy <= movey)
+							m_Nodes[i]->m_PosY += movey;
+						else
+							m_Nodes[i]->m_PosY += diffy;
+					}
+				}
+				// end if y
+
+				// if move to the destination, set animation false
+				if (diffx != 0 || diffy != 0)
+					isallmoved = false;
+			}
+			// end for
+
+			if (isallmoved)
+				m_inAnimation = false;
+
+			// dont forget update frame
+			fn_UpdateFrame();
+		}
+		else
+		{
+			for (int i = 0; i < num; i++)
+			{
+				m_Nodes[i]->m_DestX = m_Nodes[i]->m_PosX;
+				m_Nodes[i]->m_DestY = m_Nodes[i]->m_PosY;
+			}
+		}
+	}
+
 	if (m_state == PAUSE)
 	{
 	}
@@ -765,8 +859,11 @@ bool Li_GraphPlayer::fn_keyListener()
 						// move all of the neighbours of current selected
 						for (int i = 0; i < (int)m_Nodes[s]->m_Conn.size(); i++)
 						{
-							m_Nodes[s]->m_Conn[i]->m_PosX = m_Nodes[s]->m_PosX + radius *(float)cos(2 * PI * i / m_Nodes[s]->m_Conn.size());
-							m_Nodes[s]->m_Conn[i]->m_PosY = m_Nodes[s]->m_PosY + radius *(float)sin(2 * PI * i / m_Nodes[s]->m_Conn.size());
+							//m_Nodes[s]->m_Conn[i]->m_PosX = m_Nodes[s]->m_PosX + radius *(float)cos(2 * PI * i / m_Nodes[s]->m_Conn.size());
+							//m_Nodes[s]->m_Conn[i]->m_PosY = m_Nodes[s]->m_PosY + radius *(float)sin(2 * PI * i / m_Nodes[s]->m_Conn.size());
+							m_Nodes[s]->m_Conn[i]->m_DestX = m_Nodes[s]->m_PosX + radius *(float)cos(2 * PI * i / m_Nodes[s]->m_Conn.size());
+							m_Nodes[s]->m_Conn[i]->m_DestY = m_Nodes[s]->m_PosY + radius *(float)sin(2 * PI * i / m_Nodes[s]->m_Conn.size());
+							m_inAnimation = true;
 						}
 					}
 
@@ -783,6 +880,62 @@ bool Li_GraphPlayer::fn_keyListener()
 		// end if keypushed
 	}
 	// End DIK_G
+	else if(m_DxInput->m_KeyState[DIK_M] & 0x80)
+	{
+		if (!keyPushed)
+		{
+			if (!m_Nodes.empty())
+			{
+				// 用来记录已经整合位置的点的列表
+				// 因为评测共邻比较浪费计算周期，所以记录已经整合的点，节省计算时间
+				vector<bool> ismerged;
+
+				int num = m_Nodes.size();
+
+				for (int i = 0; i < num; i++)
+				{
+					ismerged.push_back(false);
+				}
+
+				for (int i = 0; i < num - 1; i++)
+				{
+					// 如果未整合过
+					if (!ismerged[i])
+					{
+						// 即便未整合过，i点也已经被前面的点测试过，所以不用考虑i前面的点
+						for (int j = i+1; j < num; j++)
+						{
+							if (!ismerged[j])
+							{
+								// 先只考虑直连共邻， 把2改为1则是非直连共邻，1，2同时则是任意共邻
+								if (m_Nodes[i]->fn_neighbourSharingTo(m_Nodes[j]) == 2)
+								{
+									// 共邻的情况下，先转移坐标，然后将 j 设置为已经整合过
+									// 此处不用设置i, 在i循环的结尾统一设置i的整合状态为真
+									m_Nodes[j]->m_DestX = m_Nodes[i]->m_PosX;
+									m_Nodes[j]->m_DestY = m_Nodes[i]->m_PosY;
+									ismerged[j] = true;
+									// 设置移动动画开启
+									m_inAnimation = true;
+								}
+								// end if
+							}
+							// end if j
+						}
+						// end for j
+					}
+					// end if i
+					ismerged[i] = true;
+				}
+				// end for i
+			}
+			// end if
+			
+			keyPushed = true;
+		}
+		// end if keypushed
+	}
+	// End DIK_M
 	else // default, push nothing or useless key
 		keyPushed = false;
 
@@ -1283,10 +1436,12 @@ bool Li_GraphPlayer::fn_mouseListener()
 			else if (m_lstBtnGraphLayout.fn_getCurrentSelected() == 1)
 			{
 				fn_InitNodePos(L_CIRCLE);
+				m_inAnimation = true;
 			}
 			else if (m_lstBtnGraphLayout.fn_getCurrentSelected() == 2)
 			{
 				fn_InitNodePos(L_SQUARE);
+				m_inAnimation = true;
 			}
 			// end if else
 		}

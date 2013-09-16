@@ -100,6 +100,13 @@ protected:
 
 	// Cursor sprite
 	Li_Sprite			m_cursor;
+
+	// time control
+	time_t				m_lastTime;
+	time_t				m_currTime;
+
+	// Frame Per Second
+	int					m_FPS;
 };
 
 #endif
